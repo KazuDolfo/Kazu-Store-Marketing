@@ -184,12 +184,12 @@ function renderComboMessage(items, regular, offer) {
     msg += ` 🔥 _(¡Te ahorras S/ ${ahorro.toFixed(2)}!)_`;
   }
 
-  msg += `\n\n🛡️ *Beneficios incluidos:*
+  msg += `\n\n🛡️ *Garantía KazuStore:*
 • Cuentas 100% estables, privadas y seguras.
 • Soporte técnico continuo durante todo tu periodo.
 • Activación rápida tras confirmar tu pago.
 
-📲 *¿Deseas activarlo hoy?* Escríbeme y te paso los datos de pago al instante (Yape / Plin / Transferencia). ¡Será un gusto atenderte!`;
+📲 *¿Deseas activarlo hoy?* Escríbeme y te paso los datos de pago al instante (Yape / Plin / Transferencia). ¡Será un gusto atenderte en *KazuStore*!`;
 
   txt.value = msg;
 }

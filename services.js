@@ -349,7 +349,7 @@ Software líder de diseño 2D y 3D para arquitectura e ingeniería.
 ];
 
 const GLOBAL_TEMPLATES = {
-  "👋 Saludo / Catálogo Digital": `¡Hola! Qué gusto saludarte. Te comparto nuestro catálogo con activación inmediata y garantía directa:
+  "👋 Saludo / Catálogo Digital": `¡Hola! Qué gusto saludarte de parte de *KazuStore*. ⚡ Te comparto nuestro catálogo con activación inmediata y garantía directa:
 
 🍿 *STREAMING Y TV (30 Días Garantizados):*
 • Netflix Ultra HD: S/ 15.00 (Promo 1ra compra: S/ 13.00)
@@ -365,9 +365,9 @@ const GLOBAL_TEMPLATES = {
 • Windows 10 / 11 Pro: S/ 25.00 | Office 365 (1 Año): S/ 30.00
 • Canva Pro (1 Año): S/ 15.00 | Gemini Pro (18M): S/ 35.00
 
-💡 *Garantía asegurada:* Cuentas estables y soporte continuo. ¿Cuál te gustaría activar hoy?`,
+💡 *Garantía asegurada:* Cuentas estables y soporte continuo en *KazuStore*. ¿Cuál te gustaría activar hoy?`,
 
-  "🛠️ Soporte y Respaldo Inmediato": `Hola, qué tal. Lamento la molestia, no te preocupes que tu servicio cuenta con *garantía activa* y lo resolvemos juntos ahora mismo.
+  "🛠️ Soporte y Respaldo Inmediato": `Hola, qué tal. Te saluda el equipo de *KazuStore*. Lamento la molestia, no te preocupes que tu servicio cuenta con *garantía activa* y lo resolvemos juntos ahora mismo.
 
 Para solucionarlo de una vez, compárteme por favor:
 1. Captura del error en tu pantalla.
@@ -381,9 +381,9 @@ Lo verifico de inmediato para restablecer tu acceso.`,
 
 🍿 *Por favor ingresa a tu perfil y reproduce cualquier película, serie o contenido para verificar que todo fluya perfecto.*
 
-Disculpa el inconveniente presentado. ¡Muchas gracias por tu paciencia y que disfrutes al máximo de tu servicio! 🙌`,
+Disculpa el inconveniente presentado. ¡Muchas gracias por tu confianza en *KazuStore* y que disfrutes al máximo de tu servicio! 🙌`,
 
-  "⏰ Recordatorio de Renovación VIP": `¡Hola! Paso a avisarte que tu servicio de 30 días está próximo a vencer en las siguientes 24 horas.
+  "⏰ Recordatorio de Renovación VIP": `¡Hola! Te saludamos de *KazuStore*. Paso a avisarte que tu servicio de 30 días está próximo a vencer en las siguientes 24 horas.
 
 📌 *Beneficios de renovar con anticipación:*
 • Conservas tu mismo perfil, historial y listas sin cortes.
@@ -391,7 +391,7 @@ Disculpa el inconveniente presentado. ¡Muchas gracias por tu paciencia y que di
 
 ¿Deseas mantener tu cuenta activa? Confírmame por aquí para pasarte los datos de pago (Yape / Plin). ¡Gracias por tu confianza! 🙌`,
 
-  "💳 Medios de Pago": `💳 *MEDIOS DE PAGO DISPONIBLES*
+  "💳 Medios de Pago": `💳 *MEDIOS DE PAGO OFICIALES - KAZUSTORE*
 
 Puedes realizar tu pago de manera rápida y segura por:
 
@@ -423,9 +423,9 @@ Titular: (Nombre del titular)
 };
 
 const STRATEGIES = {
-  "gancho_confianza": `🔥 *¡OFERTA DE BIENVENIDA (GARANTÍA ASEGURADA)!* 🔥
+  "gancho_confianza": `🔥 *¡OFERTA DE BIENVENIDA KAZUSTORE!* 🔥
 
-¿Primera vez que compras con nosotros? Queremos que pruebes la calidad y estabilidad de nuestro servicio con total seguridad.
+¿Primera vez que compras con nosotros? En *KazuStore* queremos que pruebes la calidad y estabilidad de nuestro servicio con total seguridad.
 
 🎁 *Precios especiales de primer mes:*
 • *Disney+ Estándar:* solo *S/ 5.00* (Antes: S/ 7.00)

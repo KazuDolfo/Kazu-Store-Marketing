@@ -112,9 +112,10 @@ Sumérgete en tu música con la máxima calidad y aislamiento total.
 ];
 
 const SHIPPING_TEMPLATES = {
-  "contraentrega": `🛵 *COORDINACIÓN DE CONTRAENTREGA (PAGO AL RECIBIR)*
+  "contraentrega": `🛵 *COORDINACIÓN DE CONTRAENTREGA - KAZUSTORE*
+(Pagas al recibir tu producto en mano)
 
-¡Excelente elección! Tu pedido se despacha con total seguridad:
+¡Excelente elección! Tu pedido se despacha con total seguridad por *KazuStore*:
 
 📍 *Puntos de Entrega:*
 • *Chorrillos:* Entrega *GRATIS* en puntos céntricos / estaciones.
@@ -124,9 +125,10 @@ const SHIPPING_TEMPLATES = {
 
 📲 Por favor compárteme tu dirección exacta o referencia y distrito para cotizar tu envío y agendar el horario de entrega hoy mismo.`,
 
-  "envio_nacional": `📦 *ENVÍOS A TODO EL PERÚ (SEGURO Y GARANTIZADO)*
+  "envio_nacional": `📦 *ENVÍOS A TODO EL PERÚ - KAZUSTORE*
+(Despacho 100% Seguro y Garantizado)
 
-Hacemos envíos diarios a provincias mediante agencias líderes:
+En *KazuStore* hacemos envíos diarios a provincias mediante agencias líderes:
 
 🚚 *Agencias disponibles:*
 • *Shalom* (Pago de flete en destino)
@@ -138,7 +140,7 @@ Hacemos envíos diarios a provincias mediante agencias líderes:
 
 📲 Compártenos tu Departamento, Provincia y Agencia de preferencia para preparar tu despacho.`,
 
-  "confirmacion_datos": `📝 *FORMULARIO PARA CONFIRMAR TU PEDIDO*
+  "confirmacion_datos": `📝 *FORMULARIO DE PEDIDO - KAZUSTORE*
 
 Por favor completa los siguientes datos para agendar tu despacho de inmediato:
 
