@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Ventas - Servicios & Productos Físicos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- NAVEGACIÓN PRINCIPAL: SERVICIOS VS PRODUCTOS -->
+    <div class="top-menu">
+      <button id="btn-mod-servicios" class="top-menu-btn active" onclick="switchMainModule('servicios')">🌐 Servicios Digitales & Keys</button>
+      <button id="btn-mod-productos" class="top-menu-btn prod-btn" onclick="switchMainModule('productos')">📦 Productos Físicos & Tech</button>
+    </div>
+
+    <!-- ========================================================
+         MÓDULO 1: SERVICIOS DIGITALES & LICENCIAS
+    ========================================================= -->
+    <div id="module-servicios" class="view-module active">
+      <div class="header-nav">
+        <button class="nav-btn active" onclick="showSubSection(this, 'combos')">📦 Combos Digitales</button>
+        <button class="nav-btn" onclick="showSubSection(this, 'entregas')">🔑 Entregas (Con Upselling)</button>
+        <button class="nav-btn" onclick="showSubSection(this, 'mensajes')">💬 Mensajes y Atención</button>
+        <button class="nav-btn" onclick="showSubSection(this, 'estrategias')">🚀 Gancho y Retención</button>
+      </div>
+
+      <!-- 1.1 COMBOS DIGITALES -->
+      <div id="sec-combos" class="section-panel active">
+        <div class="grid-2">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label class="lbl" style="font-size:0.9rem; color:#fff;">Selecciona plataformas:</label>
+              <button onclick="clearCombos()" style="background:none; border:none; color:var(--muted); font-size:0.75rem; cursor:pointer;">[Limpiar]</button>
+            </div>
+            <div class="chips-grid" id="combo-chips"></div>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="flex:1;">
+                <label class="lbl">Descuento sugerido:</label>
+                <select id="combo-disc" onchange="calcComboPrice()">
+                  <option value="10">10% Descuento</option>
+                  <option value="15" selected>15% Descuento (Recomendado)</option>
+                  <option value="20">20% Descuento</option>
+                  <option value="0">Sin descuento</option>
+                </select>
+              </div>
+              <div style="flex:1;">
+                <label class="lbl">O Precio Manual (S/):</label>
+                <input type="number" id="combo-manual" placeholder="Ej: 28.00" oninput="manualComboPrice()">
+              </div>
+            </div>
+
+            <div class="price-box">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span>Precio Regular: <s id="combo-reg" style="color:var(--muted);">S/ 0.00</s></span>
+                <span>Oferta Combo: <strong id="combo-final" style="color:var(--primary); font-size:1.05rem;">S/ 0.00</strong></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border); padding-top:6px;">
+                <span>Tu Costo: <b id="combo-cost" style="color:var(--muted);">S/ 0.00</b></span>
+                <span>Tu Ganancia: <span id="combo-profit" class="profit-badge profit-safe">+ S/ 0.00</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="lbl">Mensaje Promocional del Combo para WhatsApp:</label>
+            <textarea id="combo-text"></textarea>
+            <button class="btn-copy" onclick="copy('combo-text')">📋 Copiar Mensaje de Combo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.2 ENTREGAS DIGITALES -->
+      <div id="sec-entregas" class="section-panel">
+        <div class="grid-2">
+          <div>
+            <!-- DATOS DEL CLIENTE PERSONALIZADOS -->
+            <div class="grid-2" style="gap:8px; background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:8px; border-radius:6px; margin-bottom:10px;">
+              <div>
+                <label class="lbl">Nombre del Cliente (Opcional):</label>
+                <input type="text" id="ent-client-name" placeholder="Ej: Juan Pérez" oninput="buildEntrega()">
+              </div>
+              <div>
+                <label class="lbl">WhatsApp / Número:</label>
+                <input type="text" id="ent-client-phone" placeholder="Ej: 987654321">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="lbl">Tipo / Servicio:</label>
+              <select id="ent-service" onchange="onEntregaServiceChange()"></select>
+            </div>
+
+            <div id="fields-account">
+              <div class="grid-2" style="gap:8px;">
+                <div class="form-group">
+                  <label class="lbl">Fecha Vencimiento:</label>
+                  <input type="text" id="ent-date" placeholder="DD/MM/AAAA" oninput="buildEntrega()">
+                </div>
+                <div class="form-group">
+                  <label class="lbl">Perfil Asignado:</label>
+                  <input type="text" id="ent-profile" value="Perfil 1" oninput="buildEntrega()">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="lbl">Correo / Usuario:</label>
+                <input type="text" id="ent-email" placeholder="correo@ejemplo.com" oninput="buildEntrega()">
+              </div>
+              <div class="grid-2" style="gap:8px;">
+                <div class="form-group">
+                  <label class="lbl">Contraseña:</label>
+                  <input type="text" id="ent-pass" value="Solicitar acceso al proveedor." oninput="buildEntrega()">
+                </div>
+                <div class="form-group">
+                  <label class="lbl">PIN de Perfil:</label>
+                  <input type="text" id="ent-pin" value="2021" oninput="buildEntrega()">
+                </div>
+              </div>
+            </div>
+
+            <div id="fields-license" style="display:none;">
+              <div class="form-group">
+                <label class="lbl">Clave de Licencia / Key:</label>
+                <input type="text" id="ent-license-key" placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" oninput="buildEntrega()">
+              </div>
+              <div class="form-group">
+                <label class="lbl">Instrucciones:</label>
+                <input type="text" id="ent-license-link" value="Configuración > Sistema > Activación" oninput="buildEntrega()">
+              </div>
+            </div>
+
+            <div style="background:rgba(56, 189, 248, 0.08); border:1px solid var(--border); padding:8px 12px; border-radius:6px; margin-top:10px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer; color:var(--primary); font-weight:bold;">
+                <input type="checkbox" id="chk-upselling" onchange="buildEntrega()" style="width:auto; cursor:pointer;" checked>
+                Incluir oferta de Upselling Contextual
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="lbl">Plantilla de Entrega Personalizada:</label>
+            <textarea id="ent-text"></textarea>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn-copy" style="flex:1; margin-top:0;" onclick="copy('ent-text')">📋 Copiar</button>
+              <button class="btn-copy" style="flex:1.2; margin-top:0; background:#25d366;" onclick="sendEntregaWhatsApp()">📲 Enviar por WhatsApp</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1.3 MENSAJES Y ATENCIÓN DIGITAL -->
+      <div id="sec-mensajes" class="section-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+          <div style="display:flex; gap:10px;">
+            <button id="tab-btn-globales" class="sub-btn active" style="font-size:0.9rem; padding:8px 16px;" onclick="switchMsgType('globales')">🌐 Mensajes Globales</button>
+            <button id="tab-btn-servicio" class="sub-btn" style="font-size:0.9rem; padding:8px 16px;" onclick="switchMsgType('servicio')">🎯 Mensajes por Servicio</button>
+          </div>
+          <button class="sub-btn" style="border-color:var(--primary); color:var(--primary);" onclick="togglePaymentSettings()">⚙️ Mis Cuentas / Pagos</button>
+        </div>
+
+        <!-- FORMULARIO PRIVADO DE CONFIGURACIÓN DE CUENTAS (GUARDADO LOCAL) -->
+        <div id="payment-settings-box" style="display:none; background:#0a0f1d; border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:12px;">
+          <label class="lbl" style="color:var(--primary); font-weight:bold; margin-bottom:8px;">⚙️ Configura tus datos de pago (Se guardan solo en tu navegador):</label>
+          <div class="grid-2" style="gap:8px;">
+            <div><input type="text" id="cfg-yape-name" placeholder="Yape - Titular" oninput="savePaymentSettings()"></div>
+            <div><input type="text" id="cfg-yape-num" placeholder="Yape - Número" oninput="savePaymentSettings()"></div>
+            <div><input type="text" id="cfg-plin-name" placeholder="Plin - Titular" oninput="savePaymentSettings()"></div>
+            <div><input type="text" id="cfg-plin-num" placeholder="Plin - Número" oninput="savePaymentSettings()"></div>
+            <div><input type="text" id="cfg-bcp" placeholder="BCP - N° Cuenta / CCI" oninput="savePaymentSettings()"></div>
+            <div><input type="text" id="cfg-bbva" placeholder="BBVA - N° Cuenta / CCI" oninput="savePaymentSettings()"></div>
+            <div><input type="text" id="cfg-interbank" placeholder="Interbank - N° Cuenta / CCI" oninput="savePaymentSettings()"></div>
+          </div>
+        </div>
+
+        <div id="sub-msg-globales">
+          <label class="lbl">Plantillas de atención:</label>
+          <div class="sub-tabs" id="msg-global-tabs"></div>
+        </div>
+
+        <div id="sub-msg-servicio" style="display:none;">
+          <div class="form-group">
+            <label class="lbl">Selecciona la plataforma:</label>
+            <select id="msg-service-select" onchange="onServiceMsgChange()"></select>
+          </div>
+          <div class="sub-tabs" id="msg-service-tabs"></div>
+        </div>
+
+        <label class="lbl" style="margin-top:10px;">Mensaje listo para WhatsApp:</label>
+        <textarea id="msg-text" style="min-height: 180px;"></textarea>
+        <button class="btn-copy" onclick="copy('msg-text')">📋 Copiar Mensaje</button>
+      </div>
+
+      <!-- 1.4 ESTRATEGIAS Y RETENCIÓN -->
+      <div id="sec-estrategias" class="section-panel">
+        <label class="lbl">Selecciona una estrategia de captación o retención:</label>
+        <div class="sub-tabs" id="strat-tabs">
+          <button class="sub-btn active" onclick="loadStrategy('gancho_confianza', this)">🎣 Gancho de Confianza (Nuevos)</button>
+          <button class="sub-btn" onclick="loadStrategy('retencion_anticipada', this)">⏰ Retención Anticipada</button>
+          <button class="sub-btn" onclick="loadStrategy('combo_cine', this)">🍿 Combo Cine (Netflix + Max)</button>
+          <button class="sub-btn" onclick="loadStrategy('combo_pro', this)">💻 Combo Oficina (365 + Canva)</button>
+        </div>
+
+        <label class="lbl">Mensaje estratégico para enviar:</label>
+        <textarea id="strat-text" style="min-height: 200px;"></textarea>
+        <button class="btn-copy" onclick="copy('strat-text')">📋 Copiar Estrategia</button>
+      </div>
+    </div>
+
+
+    <!-- ========================================================
+         MÓDULO 2: PRODUCTOS FÍSICOS & TECH (NUEVO)
+    ========================================================= -->
+    <div id="module-productos" class="view-module">
+      <div class="header-nav">
+        <button class="nav-btn prod-nav active" onclick="showProdSection(this, 'prod-catalogo')">🔥 Catálogo & Fichas de Venta</button>
+        <button class="nav-btn prod-nav" onclick="showProdSection(this, 'prod-combos')">📦 Combos Tech & Packs</button>
+        <button class="nav-btn prod-nav" onclick="showProdSection(this, 'prod-envios')">🛵 Coordinación de Entrega & Contraentrega</button>
+      </div>
+
+      <!-- 2.1 CATÁLOGO Y FICHAS INDIVIDUALES -->
+      <div id="sec-prod-catalogo" class="section-panel active">
+        <div class="grid-2">
+          <div>
+            <div class="form-group">
+              <label class="lbl">Selecciona el Producto Físico:</label>
+              <select id="prod-select" onchange="onProductSelectChange()"></select>
+            </div>
+            <div class="sub-tabs" id="prod-subtabs"></div>
+          </div>
+          <div>
+            <label class="lbl">Mensaje de Venta / Ficha Técnica para WhatsApp:</label>
+            <textarea id="prod-text"></textarea>
+            <button class="btn-copy" style="background:var(--prod-accent); color:#0b1120;" onclick="copy('prod-text')">📋 Copiar Mensaje del Producto</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.2 COMBOS TECH (SMARTWATCH + AIRPODS / SERVICIOS) -->
+      <div id="sec-prod-combos" class="section-panel">
+        <div class="grid-2">
+          <div>
+            <label class="lbl">Selecciona los productos y regalos digitales para el Pack:</label>
+            <div class="chips-grid" id="prod-combo-chips"></div>
+
+            <div style="display:flex; gap:8px; align-items:center;">
+              <div style="flex:1;">
+                <label class="lbl">Descuento aplicado:</label>
+                <select id="prod-combo-disc" onchange="calcProdComboPrice()">
+                  <option value="10">10% Descuento</option>
+                  <option value="15" selected>15% Descuento (Pack Estrella)</option>
+                  <option value="20">20% Descuento</option>
+                  <option value="0">Precio Normal</option>
+                </select>
+              </div>
+              <div style="flex:1;">
+                <label class="lbl">O Precio Oferta Fijo (S/):</label>
+                <input type="number" id="prod-combo-manual" placeholder="Ej: 119.00" oninput="manualProdComboPrice()">
+              </div>
+            </div>
+
+            <div class="price-box">
+              <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                <span>Total Individual: <s id="prod-combo-reg" style="color:var(--muted);">S/ 0.00</s></span>
+                <span>Precio Oferta Pack: <strong id="prod-combo-final" style="color:var(--prod-accent); font-size:1.1rem;">S/ 0.00</strong></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border); padding-top:6px;">
+                <span>Modalidad: <b style="color:#fff;">Contraentrega / Envío</b></span>
+                <span id="prod-combo-saving" style="color:var(--accent); font-weight:bold;">Ahorro: S/ 0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label class="lbl">Mensaje del Pack Físico para WhatsApp:</label>
+            <textarea id="prod-combo-text"></textarea>
+            <button class="btn-copy" style="background:var(--prod-accent); color:#0b1120;" onclick="copy('prod-combo-text')">📋 Copiar Mensaje del Pack Tech</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.3 COORDINACIÓN DE ENVÍOS & CONTRAENTREGA -->
+      <div id="sec-prod-envios" class="section-panel">
+        <div class="sub-tabs" id="prod-shipping-tabs">
+          <button class="sub-btn prod-sub active" onclick="loadShippingTemplate('contraentrega', this)">🛵 Contraentrega (Lima / Chorrillos)</button>
+          <button class="sub-btn prod-sub" onclick="loadShippingTemplate('envio_nacional', this)">📦 Envíos a Provincias (Olva / Shalom)</button>
+          <button class="sub-btn prod-sub" onclick="loadShippingTemplate('confirmacion_datos', this)">📝 Formulario de Datos del Cliente</button>
+        </div>
+        <label class="lbl">Mensaje para coordinar despacho y entrega:</label>
+        <textarea id="prod-shipping-text" style="min-height: 200px;"></textarea>
+        <button class="btn-copy" style="background:var(--prod-accent); color:#0b1120;" onclick="copy('prod-shipping-text')">📋 Copiar Mensaje de Envío</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="services.js"></script>`n  <script src="products.js"></script>`n  <script src="app.js"></script>
+</body>
+</html>
+
+
