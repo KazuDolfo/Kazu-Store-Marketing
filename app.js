@@ -556,8 +556,60 @@ function copy(id) {
   navigator.clipboard.writeText(el.value);
   alert("¡Copiado al portapapeles listo para enviar!");
 }
+async function submitKazuCardStamp() {
+  const phone = document.getElementById('kc-admin-phone').value.trim();
+  const action = document.getElementById('kc-admin-action').value;
+  const amount = parseInt(document.getElementById('kc-admin-amount').value) || 1;
+  const reason = document.getElementById('kc-admin-reason').value.trim();
+  const statusEl = document.getElementById('kc-admin-status');
+  const linkText = document.getElementById('kc-client-link-text');
+
+  if (!phone) {
+    alert('Ingresa el número de WhatsApp del cliente.');
+    return;
+  }
+
+  statusEl.textContent = 'Guardando en Supabase...';
+  const result = await window.kazuAdminDb.grantOrRedeemStamps(phone, amount, action, reason);
+
+  if (result.success) {
+    statusEl.textContent = '✅ ¡Sello registrado y balance actualizado en la base de datos!';
+    const clientUrl = `https://kazustore.com/?tel=${encodeURIComponent(phone)}`;
+    linkText.value = `¡Hola! Tu saldo de sellos KazuCard ha sido actualizado. Puedes ver tu tarjeta digital y reclamar tus premios aquí:\n${clientUrl}`;
+  } else {
+    statusEl.textContent = '❌ Error: ' + result.error;
+  }
+}
+
+async function loadDashboardMetrics() {
+  if (!window.kazuAdminDb) return;
+  const data = await window.kazuAdminDb.getDashboardMetrics();
+  if (data) {
+    if (document.getElementById('metric-sales')) document.getElementById('metric-sales').textContent = `S/ ${parseFloat(data.total_gross_sales || 0).toFixed(2)}`;
+    if (document.getElementById('metric-profit')) document.getElementById('metric-profit').textContent = `S/ ${parseFloat(data.total_net_profit || 0).toFixed(2)}`;
+    if (document.getElementById('metric-clients')) document.getElementById('metric-clients').textContent = data.total_registered_clients || 0;
+  }
+}
+
+async function loadExpiringSubscriptions() {
+  const listEl = document.getElementById('expiring-list');
+  if (!listEl || !window.kazuAdminDb) return;
+  listEl.textContent = 'Buscando suscripciones por vencer...';
+  const subs = await window.kazuAdminDb.getExpiringSubscriptions();
+  if (!subs || subs.length === 0) {
+    listEl.innerHTML = '<em>No hay suscripciones próximas a vencer en los siguientes 3 días.</em>';
+    return;
+  }
+  let html = '<ul style="margin:0; padding-left:18px;">';
+  subs.forEach(s => {
+    html += `<li><strong>${s.product_name}</strong> - ${s.client_phone} (Vence en ${s.days_remaining} días, ${s.end_date})</li>`;
+  });
+  html += '</ul>';
+  listEl.innerHTML = html;
+}
 
 window.onload = () => {
   loadPaymentSettings();
   init();
+  loadDashboardMetrics();
 };

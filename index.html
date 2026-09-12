@@ -14,10 +14,12 @@
       <div style="font-size:0.8rem; color:var(--muted); background:#1e293b; padding:4px 10px; border-radius:12px; border:1px solid var(--border);">Panel Comercial</div>
     </div>
 
-    <!-- NAVEGACIÓN PRINCIPAL: SERVICIOS VS PRODUCTOS -->
+    <!-- NAVEGACIÓN PRINCIPAL: SERVICIOS, PRODUCTOS, KAZUCARD Y MÉTRICAS -->
     <div class="top-menu">
       <button id="btn-mod-servicios" class="top-menu-btn active" onclick="switchMainModule('servicios')">🌐 Servicios Digitales & Keys</button>
       <button id="btn-mod-productos" class="top-menu-btn prod-btn" onclick="switchMainModule('productos')">📦 Productos Físicos & Tech</button>
+      <button id="btn-mod-kazucard" class="top-menu-btn" style="background:#047857; color:#fff;" onclick="switchMainModule('kazucard')">⭐ KazuCard & Sellos</button>
+      <button id="btn-mod-metricas" class="top-menu-btn" style="background:#4338ca; color:#fff;" onclick="switchMainModule('metricas')">📊 Métricas & Ganancias</button>
     </div>
 
     <!-- ========================================================
@@ -298,9 +300,74 @@
       </div>
     </div>
 
+    <!-- ========================================================
+         MÓDULO 3: FIDELIZACIÓN KAZUCARD & SELLOS (SUPABASE)
+    ========================================================= -->
+    <div id="module-kazucard" class="view-module">
+      <div class="grid-2">
+        <div>
+          <label class="lbl">Número de Teléfono del Cliente:</label>
+          <input type="tel" id="kc-admin-phone" placeholder="Ej: 987654321" style="margin-bottom:10px;">
+
+          <label class="lbl">Acción de Sellos:</label>
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <select id="kc-admin-action" style="flex:1;">
+              <option value="earned">⭐ Otorgar Sellos (+)</option>
+              <option value="redeemed">🎁 Canjear Premio / Restar (-)</option>
+            </select>
+            <input type="number" id="kc-admin-amount" value="1" min="1" max="5" style="width:70px;">
+          </div>
+
+          <label class="lbl">Motivo / Servicio Comprado:</label>
+          <input type="text" id="kc-admin-reason" placeholder="Ej: Compra Netflix 30 días" style="margin-bottom:12px;">
+
+          <button class="btn-copy" style="background:#059669; color:#fff;" onclick="submitKazuCardStamp()">⚡ Guardar y Actualizar en Base de Datos</button>
+          <div id="kc-admin-status" style="margin-top:10px; font-size:0.85rem; color:#34d399;"></div>
+        </div>
+
+        <div>
+          <label class="lbl">Enlace Firmado para Enviar al Cliente:</label>
+          <textarea id="kc-client-link-text" placeholder="Aquí aparecerá el enlace directo del cliente..."></textarea>
+          <button class="btn-copy" onclick="copy('kc-client-link-text')">📋 Copiar Enlace Directo para WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+         MÓDULO 4: MÉTRICAS Y ALERTAS DE RENOVACIÓN (SUPABASE)
+    ========================================================= -->
+    <div id="module-metricas" class="view-module">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:20px;">
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:8px; text-align:center;">
+          <div style="color:var(--muted); font-size:0.8rem;">Ventas Totales</div>
+          <div id="metric-sales" style="font-size:1.3rem; font-weight:bold; color:var(--primary);">S/ 0.00</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:8px; text-align:center;">
+          <div style="color:var(--muted); font-size:0.8rem;">Ganancia Neta</div>
+          <div id="metric-profit" style="font-size:1.3rem; font-weight:bold; color:#10b981;">S/ 0.00</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border); padding:12px; border-radius:8px; text-align:center;">
+          <div style="color:var(--muted); font-size:0.8rem;">Clientes Registrados</div>
+          <div id="metric-clients" style="font-size:1.3rem; font-weight:bold; color:#38bdf8;">0</div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <label class="lbl" style="font-size:0.95rem; color:#fff;">🚨 Cuentas Próximas a Vencer (Próximos 3 días):</label>
+        <button onclick="loadExpiringSubscriptions()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; cursor:pointer;">[Actualizar]</button>
+      </div>
+      <div id="expiring-list" style="font-size:0.85rem; color:var(--muted); background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:10px; border-radius:8px;">
+        Cargando suscripciones...
+      </div>
+    </div>
+
   </div>
 
-  <script src="services.js"></script>`n  <script src="products.js"></script>`n  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="services.js"></script>
+  <script src="products.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
 
