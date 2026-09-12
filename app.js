@@ -608,8 +608,33 @@ async function loadExpiringSubscriptions() {
   listEl.innerHTML = html;
 }
 
-window.onload = () => {
+window.submitKazuCardStamp = submitKazuCardStamp;
+window.loadDashboardMetrics = loadDashboardMetrics;
+window.loadExpiringSubscriptions = loadExpiringSubscriptions;
+window.switchMainModule = switchMainModule;
+window.showSubSection = showSubSection;
+window.showProdSection = showProdSection;
+window.toggleCombo = toggleCombo;
+window.clearCombos = clearCombos;
+window.calcComboPrice = calcComboPrice;
+window.manualComboPrice = manualComboPrice;
+window.onEntregaServiceChange = onEntregaServiceChange;
+window.buildEntrega = buildEntrega;
+window.onServiceMsgChange = onServiceMsgChange;
+window.switchMsgType = switchMsgType;
+window.loadStrategy = loadStrategy;
+window.toggleProdCombo = toggleProdCombo;
+window.clearProdCombos = clearProdCombos;
+window.calcProdComboPrice = calcProdComboPrice;
+window.manualProdComboPrice = manualProdComboPrice;
+window.onProductSelectChange = onProductSelectChange;
+window.loadShippingTemplate = loadShippingTemplate;
+window.copy = copy;
+window.togglePaymentSettings = togglePaymentSettings;
+window.savePaymentSettings = savePaymentSettings;
+
+window.addEventListener('DOMContentLoaded', () => {
   loadPaymentSettings();
   init();
   loadDashboardMetrics();
-};
+});

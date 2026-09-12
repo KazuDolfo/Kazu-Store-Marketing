@@ -1,16 +1,20 @@
 const SUPABASE_URL = "https://ukktilhrpadjmadrlocr.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_P_BxPMpdaUZh-g9kAB74Pg_Ax7THddH";
 
-const supabaseClient = (window.supabase && window.supabase.createClient) 
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
-    : null;
+function getClient() {
+    if (!window._kazuSupabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
+        window._kazuSupabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    return window._kazuSupabaseClient || null;
+}
 
 window.kazuAdminDb = {
-    client: supabaseClient,
+    getClient,
 
     async getProducts() {
-        if (!supabaseClient) return [];
-        const { data, error } = await supabaseClient
+        const client = getClient();
+        if (!client) return [];
+        const { data, error } = await client
             .from('products')
             .select('*, categories(name, slug)')
             .is('deleted_at', null)
@@ -23,8 +27,9 @@ window.kazuAdminDb = {
     },
 
     async getCategories() {
-        if (!supabaseClient) return [];
-        const { data, error } = await supabaseClient
+        const client = getClient();
+        if (!client) return [];
+        const { data, error } = await client
             .from('categories')
             .select('*')
             .is('deleted_at', null)
@@ -34,9 +39,10 @@ window.kazuAdminDb = {
     },
 
     async saveProduct(productData) {
-        if (!supabaseClient) return null;
+        const client = getClient();
+        if (!client) return null;
         if (productData.id) {
-            const { data, error } = await supabaseClient
+            const { data, error } = await client
                 .from('products')
                 .update(productData)
                 .eq('id', productData.id)
@@ -44,7 +50,7 @@ window.kazuAdminDb = {
                 .single();
             return error ? null : data;
         } else {
-            const { data, error } = await supabaseClient
+            const { data, error } = await client
                 .from('products')
                 .insert([productData])
                 .select()
@@ -54,29 +60,30 @@ window.kazuAdminDb = {
     },
 
     async grantOrRedeemStamps(phone, amount, action, reason) {
-        if (!supabaseClient || !phone) return { success: false, error: 'Sin conexión o teléfono' };
+        const client = getClient();
+        if (!client || !phone) return { success: false, error: 'Sin conexión a Supabase o número inválido' };
         
-        let { data: client } = await supabaseClient
+        let { data: clientData } = await client
             .from('clients')
             .select('id, stamps_balance')
             .eq('phone', phone.trim())
             .maybeSingle();
 
-        if (!client) {
-            const { data: newClient, error: clientErr } = await supabaseClient
+        if (!clientData) {
+            const { data: newClient, error: clientErr } = await client
                 .from('clients')
                 .insert([{ phone: phone.trim() }])
                 .select('id, stamps_balance')
                 .single();
             if (clientErr) return { success: false, error: clientErr.message };
-            client = newClient;
+            clientData = newClient;
         }
 
         const delta = action === 'redeemed' ? -Math.abs(amount) : Math.abs(amount);
-        const { data: ledger, error: ledgerErr } = await supabaseClient
+        const { data: ledger, error: ledgerErr } = await client
             .from('stamps_ledger')
             .insert([{
-                client_id: client.id,
+                client_id: clientData.id,
                 amount: delta,
                 action: action,
                 reason: reason || (action === 'earned' ? 'Compra de servicio' : 'Canje de promoción'),
@@ -90,8 +97,9 @@ window.kazuAdminDb = {
     },
 
     async getDashboardMetrics() {
-        if (!supabaseClient) return null;
-        const { data, error } = await supabaseClient
+        const client = getClient();
+        if (!client) return null;
+        const { data, error } = await client
             .from('v_dashboard_metrics')
             .select('*')
             .single();
@@ -100,8 +108,9 @@ window.kazuAdminDb = {
     },
 
     async getExpiringSubscriptions() {
-        if (!supabaseClient) return [];
-        const { data, error } = await supabaseClient
+        const client = getClient();
+        if (!client) return [];
+        const { data, error } = await client
             .from('v_expiring_soon_subscriptions')
             .select('*');
         if (error) return [];
