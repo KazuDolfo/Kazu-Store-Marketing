@@ -417,6 +417,14 @@ function toggleProdCombo(p) {
   calcProdComboPrice();
 }
 
+function clearProdCombos() {
+  selectedProdCombos.clear();
+  document.querySelectorAll('#prod-combo-chips .chip').forEach(c => c.classList.remove('active'));
+  const manualEl = document.getElementById('prod-combo-manual');
+  if (manualEl) manualEl.value = '';
+  calcProdComboPrice();
+}
+
 function calcProdComboPrice() {
   const items = PHYSICAL_PRODUCTS.filter(p => selectedProdCombos.has(p.id));
   const regular = items.reduce((acc, p) => acc + p.price, 0);
@@ -549,12 +557,25 @@ function getProcessedPaymentTemplate() {
   return base;
 }
 
-function copy(id) {
+function copy(id, btn) {
   const el = document.getElementById(id);
-  if (!el.value) return;
+  if (!el || !el.value) return;
   el.select();
-  navigator.clipboard.writeText(el.value);
-  alert("¡Copiado al portapapeles listo para enviar!");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(el.value);
+  } else {
+    document.execCommand('copy');
+  }
+  
+  if (btn) {
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ ¡Copiado!';
+    btn.style.opacity = '0.9';
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.style.opacity = '';
+    }, 1500);
+  }
 }
 async function submitKazuCardStamp() {
   const phone = document.getElementById('kc-admin-phone').value.trim();
@@ -574,7 +595,7 @@ async function submitKazuCardStamp() {
 
   if (result.success) {
     statusEl.textContent = '✅ ¡Sello registrado y balance actualizado en la base de datos!';
-    const clientUrl = `https://kazustore.com/?tel=${encodeURIComponent(phone)}`;
+    const clientUrl = `https://kazudolfo.github.io/kazu-store/?tel=${encodeURIComponent(phone)}`;
     linkText.value = `¡Hola! Tu saldo de sellos KazuCard ha sido actualizado. Puedes ver tu tarjeta digital y reclamar tus premios aquí:\n${clientUrl}`;
   } else {
     statusEl.textContent = '❌ Error: ' + result.error;
