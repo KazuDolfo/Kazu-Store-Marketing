@@ -1,384 +1,605 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KazuStore - Panel de Ventas & Mensajes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>KazuStore Hub - Panel Comercial & Ventas</title>
+  <meta name="description" content="Panel comercial, cotizador de combos en vivo y generador de mensajes de venta KazuStore">
+  <!-- Preconnect & DNS Prefetch para aceleración de Core Web Vitals 2026 -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://ukktilhrpadjmadrlocr.supabase.co" crossorigin>
+  <link rel="dns-prefetch" href="https://ukktilhrpadjmadrlocr.supabase.co">
+
+  <!-- Indexación y Canónica -->
+  <link rel="canonical" href="https://kazustore.pe/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+
+  <!-- Open Graph / Redes Sociales -->
+  <meta property="og:locale" content="es_PE">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="KazuStore Hub - Panel Comercial & Ventas">
+  <meta property="og:description" content="Panel comercial, cotizador de combos en vivo y generador de mensajes de venta KazuStore Perú.">
+  <meta property="og:url" content="https://kazustore.pe/">
+  <meta property="og:site_name" content="KazuStore Perú">
+  <meta property="og:image" content="https://kazustore.pe/assets/02_logotipo_horizontal_header.svg">
+  <meta property="og:image:width" content="250">
+  <meta property="og:image:height" content="48">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="KazuStore Hub - Panel Comercial & Ventas">
+  <meta name="twitter:description" content="Panel comercial, cotizador de combos en vivo y generador de mensajes de venta KazuStore Perú.">
+  <meta name="twitter:image" content="https://kazustore.pe/assets/02_logotipo_horizontal_header.svg">
+
+  <!-- Datos Estructurados Schema.org (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "KazuStore Hub",
+    "url": "https://kazustore.pe",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "All",
+    "description": "Suite operativa de cotización de streaming, cálculo de márgenes y automatización de ventas para KazuStore Perú.",
+    "provider": {
+      "@type": "Organization",
+      "name": "KazuStore Perú",
+      "url": "https://kazustore.pe",
+      "logo": "https://kazustore.pe/assets/02_logotipo_horizontal_header.svg"
+    }
+  }
+  </script>
+
+  <!-- Content Security Policy & Security Meta -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <!-- Supabase CDN Client con fallback -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Enlace accesible de salto al contenido principal (Zero-Mouse WCAG 2.4.1) -->
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
-  <div class="app-container">
-    <header class="top-header">
-      <div class="brand-title">⚡ KazuStore</div>
-      <div class="brand-badge">Panel Comercial & Fidelización</div>
-    </header>
+  <!-- Barra Superior de Navegación Operativa -->
+  <header class="hub-header" role="banner">
+    <div class="hub-header-container">
+      <div class="hub-brand">
+        <img src="assets/02_logotipo_horizontal_header.svg" alt="KazuStore Perú" class="hub-brand-logo" width="177" height="34" style="height: 34px; width: auto; aspect-ratio: 250 / 48;">
+        <span class="hub-badge">HUB COMERCIAL</span>
+      </div>
 
-    <!-- NAVEGACIÓN PRINCIPAL: SERVICIOS, PRODUCTOS, KAZUCARD Y MÉTRICAS -->
-    <nav class="top-menu" aria-label="Navegación de módulos">
-      <button id="btn-mod-servicios" class="top-menu-btn active" onclick="switchMainModule('servicios')">🌐 Servicios Digitales & Keys</button>
-      <button id="btn-mod-productos" class="top-menu-btn prod-btn" onclick="switchMainModule('productos')">📦 Productos Físicos & Tech</button>
-      <button id="btn-mod-kazucard" class="top-menu-btn btn-kc" onclick="switchMainModule('kazucard')">⭐ KazuCard & Sellos</button>
-      <button id="btn-mod-metricas" class="top-menu-btn btn-metrics" onclick="switchMainModule('metricas')">📊 Métricas & Alertas</button>
-    </nav>
+      <!-- Navegación por Módulos -->
+      <nav class="hub-nav" role="tablist" aria-label="Módulos del Hub Comercial">
+        <button class="nav-tab active" id="tab-btn-calculator" data-tab="tab-calculator" role="tab" aria-selected="true" aria-controls="tab-calculator" tabindex="0">
+          🧮 Calculadora de Combos
+        </button>
+        <button class="nav-tab" id="tab-btn-delivery" data-tab="tab-delivery" role="tab" aria-selected="false" aria-controls="tab-delivery" tabindex="-1">
+          🔑 Generador de Entrega
+        </button>
+        <button class="nav-tab" id="tab-btn-templates" data-tab="tab-templates" role="tab" aria-selected="false" aria-controls="tab-templates" tabindex="-1">
+          💬 Plantillas & Respuestas
+        </button>
+        <button class="nav-tab" id="tab-btn-shipping" data-tab="tab-shipping" role="tab" aria-selected="false" aria-controls="tab-shipping" tabindex="-1">
+          🛵 Despachos & Envíos
+        </button>
+        <button class="nav-tab" id="tab-btn-kazucard" data-tab="tab-kazucard" role="tab" aria-selected="false" aria-controls="tab-kazucard" tabindex="-1">
+          🎁 KazuPuntos & Club
+        </button>
+        <button class="nav-tab" id="tab-btn-settings" data-tab="tab-settings" role="tab" aria-selected="false" aria-controls="tab-settings" tabindex="-1">
+          ⚙️ Cuentas de Cobro
+        </button>
+      </nav>
+    </div>
+  </header>
 
-    <!-- ========================================================
-         MÓDULO 1: SERVICIOS DIGITALES & LICENCIAS
-    ========================================================= -->
-    <main>
-      <section id="module-servicios" class="view-module active">
-        <div class="header-nav">
-          <button class="nav-btn active" onclick="showSubSection(this, 'combos')">📦 Combos Digitales</button>
-          <button class="nav-btn" onclick="showSubSection(this, 'entregas')">🔑 Entregas (Con Upselling)</button>
-          <button class="nav-btn" onclick="showSubSection(this, 'mensajes')">💬 Mensajes y Atención</button>
-          <button class="nav-btn" onclick="showSubSection(this, 'estrategias')">🚀 Gancho y Retención</button>
-        </div>
+  <!-- Contenedor Principal de Vistas -->
+  <main id="main-content" class="hub-main container" tabindex="-1">
 
-        <!-- 1.1 COMBOS DIGITALES -->
-        <div id="sec-combos" class="section-panel active">
-          <div class="grid-2">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <label class="lbl" style="color:var(--text);">Selecciona plataformas:</label>
-                <button type="button" onclick="clearCombos()" style="background:none; border:none; color:var(--text-muted); font-size:0.75rem; cursor:pointer;">[Limpiar selección]</button>
-              </div>
-              <div class="chips-grid" id="combo-chips"></div>
-
-              <div style="display:flex; gap:8px; align-items:center;">
-                <div style="flex:1;">
-                  <label class="lbl" for="combo-disc">Descuento sugerido:</label>
-                  <select id="combo-disc" onchange="calcComboPrice()">
-                    <option value="10">10% Descuento</option>
-                    <option value="15" selected>15% Descuento (Recomendado)</option>
-                    <option value="20">20% Descuento</option>
-                    <option value="0">Sin descuento</option>
-                  </select>
-                </div>
-                <div style="flex:1;">
-                  <label class="lbl" for="combo-manual">O Precio Manual (S/):</label>
-                  <input type="number" id="combo-manual" placeholder="Ej: 28.00" oninput="manualComboPrice()">
-                </div>
-              </div>
-
-              <div class="price-box">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                  <span>Precio Regular: <s id="combo-reg" style="color:var(--text-muted);">S/ 0.00</s></span>
-                  <span>Oferta Combo: <strong id="combo-final" style="color:var(--primary); font-size:1.05rem;">S/ 0.00</strong></span>
-                </div>
-                <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border); padding-top:6px;">
-                  <span>Tu Costo: <b id="combo-cost" style="color:var(--text-muted);">S/ 0.00</b></span>
-                  <span>Tu Ganancia: <span id="combo-profit" class="profit-badge profit-safe">+ S/ 0.00</span></span>
-                </div>
-              </div>
+    <!-- ==========================================
+         TAB 1: CALCULADORA DE COMBOS & MARGEN
+         ========================================== -->
+    <section id="tab-calculator" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-calculator">
+      <div class="module-grid">
+        
+        <!-- Columna Izquierda: Selección del Catálogo -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>🛒 Seleccionar Servicios & Tech</h2>
+            <div class="search-catalog-box">
+              <input type="search" id="catalog-search" placeholder="Filtrar por nombre (ej: Netflix, T900, Canva)..." autocomplete="off" aria-label="Filtrar productos y servicios">
             </div>
+          </div>
 
-            <div>
-              <label class="lbl" for="combo-text">Mensaje Promocional del Combo para WhatsApp:</label>
-              <textarea id="combo-text"></textarea>
-              <button type="button" class="btn-copy" onclick="copy('combo-text', this)">📋 Copiar Mensaje de Combo</button>
-            </div>
+          <!-- Filtro Rápido de Categorías -->
+          <div class="category-filters-container" id="category-filter-bar">
+            <!-- Renderizado dinámico -->
+          </div>
+
+          <div class="catalog-items-grid" id="catalog-selector-grid">
+            <!-- Renderizado dinámico desde catalog.js -->
           </div>
         </div>
 
-        <!-- 1.2 ENTREGAS DIGITALES -->
-        <div id="sec-entregas" class="section-panel">
-          <div class="grid-2">
-            <div>
-              <div class="grid-2" style="gap:8px; background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:12px;">
-                <div>
-                  <label class="lbl" for="ent-client-name">Nombre del Cliente (Opcional):</label>
-                  <input type="text" id="ent-client-name" placeholder="Ej: Juan Pérez" oninput="buildEntrega()">
-                </div>
-                <div>
-                  <label class="lbl" for="ent-client-phone">WhatsApp / Número:</label>
-                  <input type="text" id="ent-client-phone" placeholder="Ej: 987654321">
-                </div>
-              </div>
+        <!-- Columna Derecha: Panel de Margen y Generador de Mensaje -->
+        <div class="panel-card sticky-card">
+          <div class="card-header">
+            <h2>📊 Resumen Comercial & Margen</h2>
+            <button class="btn-sm btn-ghost" id="clear-combo-btn" title="Limpiar combo">🗑️ Vaciar</button>
+          </div>
 
-              <div class="form-group">
-                <label class="lbl" for="ent-service">Tipo / Servicio:</label>
-                <select id="ent-service" onchange="onEntregaServiceChange()"></select>
-              </div>
+          <!-- Métricas Financieras en Vivo -->
+          <div class="financial-metrics-grid">
+            <div class="metric-box">
+              <span class="metric-label">Costo Base</span>
+              <span class="metric-value text-muted" id="metric-cost">S/ 0.00</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-label">Precio Regular</span>
+              <span class="metric-value" id="metric-regular">S/ 0.00</span>
+            </div>
+            <div class="metric-box highlight">
+              <span class="metric-label">Precio Combo</span>
+              <span class="metric-value text-cyan" id="metric-offer">S/ 0.00</span>
+            </div>
+            <div class="metric-box gain">
+              <span class="metric-label">Tu Ganancia</span>
+              <span class="metric-value text-emerald" id="metric-gain">S/ 0.00</span>
+            </div>
+          </div>
 
-              <div id="fields-account">
-                <div class="grid-2" style="gap:8px;">
-                  <div class="form-group">
-                    <label class="lbl" for="ent-date">Fecha Vencimiento:</label>
-                    <input type="text" id="ent-date" placeholder="DD/MM/AAAA" oninput="buildEntrega()">
-                  </div>
-                  <div class="form-group">
-                    <label class="lbl" for="ent-profile">Perfil Asignado:</label>
-                    <input type="text" id="ent-profile" value="Perfil 1" oninput="buildEntrega()">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="lbl" for="ent-email">Correo / Usuario:</label>
-                  <input type="text" id="ent-email" placeholder="correo@ejemplo.com" oninput="buildEntrega()">
-                </div>
-                <div class="grid-2" style="gap:8px;">
-                  <div class="form-group">
-                    <label class="lbl" for="ent-pass">Contraseña:</label>
-                    <input type="text" id="ent-pass" value="Solicitar acceso al proveedor." oninput="buildEntrega()">
-                  </div>
-                  <div class="form-group">
-                    <label class="lbl" for="ent-pin">PIN de Perfil:</label>
-                    <input type="text" id="ent-pin" value="2021" oninput="buildEntrega()">
-                  </div>
-                </div>
-              </div>
+          <!-- Ahorro del Cliente Destacado -->
+          <div class="client-savings-banner">
+            <span>🎁 Ahorro para tu cliente:</span>
+            <strong id="metric-savings" class="text-cyan">S/ 0.00</strong>
+          </div>
 
-              <div id="fields-license" style="display:none;">
-                <div class="form-group">
-                  <label class="lbl" for="ent-license-key">Clave de Licencia / Key:</label>
-                  <input type="text" id="ent-license-key" placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" oninput="buildEntrega()">
-                </div>
-                <div class="form-group">
-                  <label class="lbl" for="ent-license-link">Instrucciones:</label>
-                  <input type="text" id="ent-license-link" value="Configuración > Sistema > Activación" oninput="buildEntrega()">
-                </div>
-              </div>
-
-              <div style="background:rgba(56, 189, 248, 0.08); border:1px solid var(--border); padding:8px 12px; border-radius:8px; margin-top:10px;">
-                <label style="display:flex; align-items:center; gap:8px; font-size:0.85rem; cursor:pointer; color:var(--primary); font-weight:700;">
-                  <input type="checkbox" id="chk-upselling" onchange="buildEntrega()" style="width:auto; cursor:pointer;" checked>
-                  Incluir oferta de Upselling Contextual
-                </label>
+          <!-- Descuentos Rápidos -->
+          <div class="discount-controls">
+            <label>Ajustar Descuento Comercial:</label>
+            <div class="discount-buttons-row" role="group" aria-label="Porcentaje de descuento comercial">
+              <button class="btn-discount active" data-discount="0" aria-pressed="true">Normal</button>
+              <button class="btn-discount" data-discount="10" aria-pressed="false">-10%</button>
+              <button class="btn-discount" data-discount="15" aria-pressed="false">-15%</button>
+              <button class="btn-discount" data-discount="20" aria-pressed="false">-20%</button>
+              <div class="custom-price-input">
+                <label for="custom-offer-input" class="sr-only">Precio combo manual en soles</label>
+                <span>S/</span>
+                <input type="number" id="custom-offer-input" placeholder="Manual" step="0.50" aria-label="Precio combo manual en soles">
               </div>
             </div>
+          </div>
 
-            <div>
-              <label class="lbl" for="ent-text">Plantilla de Entrega Personalizada:</label>
-              <textarea id="ent-text"></textarea>
-              <div style="display:flex; gap:8px; margin-top:8px;">
-                <button type="button" class="btn-copy" style="flex:1;" onclick="copy('ent-text', this)">📋 Copiar</button>
-                <button type="button" class="btn-copy btn-whatsapp" style="flex:1.2;" onclick="sendEntregaWhatsApp()">📲 Enviar por WhatsApp</button>
+          <!-- Lista de Items en Combo -->
+          <div class="combo-selected-list" id="combo-selected-container" aria-live="polite">
+            <p class="empty-state-text">Selecciona 1 o más productos para calcular tu cotización en tiempo real.</p>
+          </div>
+
+          <!-- Mensaje Formateado para WhatsApp -->
+          <div class="message-preview-container">
+            <div class="message-preview-header">
+              <span>💬 Mensaje Listo para WhatsApp</span>
+              <div class="action-buttons-group">
+                <button class="btn-action btn-copy" id="copy-combo-msg">📋 Copiar</button>
+                <button class="btn-action btn-wa" id="send-combo-wa">🟢 Abrir WhatsApp</button>
               </div>
             </div>
+            <textarea id="combo-message-textarea" class="message-textarea" rows="7" readonly aria-label="Mensaje cotización generado para WhatsApp"></textarea>
           </div>
         </div>
 
-        <!-- 1.3 MENSAJES Y ATENCIÓN DIGITAL -->
-        <div id="sec-mensajes" class="section-panel">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid var(--border); padding-bottom:8px;">
-            <div style="display:flex; gap:10px;">
-              <button type="button" id="tab-btn-globales" class="sub-btn active" style="padding:8px 16px;" onclick="switchMsgType('globales')">🌐 Mensajes Globales</button>
-              <button type="button" id="tab-btn-servicio" class="sub-btn" style="padding:8px 16px;" onclick="switchMsgType('servicio')">🎯 Mensajes por Servicio</button>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 2: GENERADOR DE ENTREGAS & CREDENCIALES
+         ========================================== -->
+    <section id="tab-delivery" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-delivery">
+      <div class="module-grid">
+        
+        <!-- Formulario de Credenciales -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>🔑 Datos de la Cuenta o Licencia</h2>
+          </div>
+          <form id="delivery-form" class="standard-form">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="delivery-service-select">Servicio / Plataforma:</label>
+                <select id="delivery-service-select" required></select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="delivery-customer-name">Nombre del Cliente:</label>
+                <input type="text" id="delivery-customer-name" placeholder="Ej: Carlos Ramírez" required>
+              </div>
             </div>
-            <button type="button" class="sub-btn" style="border-color:var(--primary); color:var(--primary);" onclick="togglePaymentSettings()">⚙️ Mis Cuentas / Pagos</button>
-          </div>
 
-          <!-- FORMULARIO PRIVADO DE CONFIGURACIÓN DE CUENTAS (GUARDADO LOCAL) -->
-          <div id="payment-settings-box" style="display:none; background:#070b14; border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:12px;">
-            <label class="lbl" style="color:var(--primary); font-weight:700; margin-bottom:8px;">⚙️ Configura tus datos de pago (Se guardan solo en tu navegador):</label>
-            <div class="grid-2" style="gap:8px;">
-              <div><input type="text" id="cfg-yape-name" placeholder="Yape - Titular" oninput="savePaymentSettings()"></div>
-              <div><input type="text" id="cfg-yape-num" placeholder="Yape - Número" oninput="savePaymentSettings()"></div>
-              <div><input type="text" id="cfg-plin-name" placeholder="Plin - Titular" oninput="savePaymentSettings()"></div>
-              <div><input type="text" id="cfg-plin-num" placeholder="Plin - Número" oninput="savePaymentSettings()"></div>
-              <div><input type="text" id="cfg-bcp" placeholder="BCP - N° Cuenta / CCI" oninput="savePaymentSettings()"></div>
-              <div><input type="text" id="cfg-bbva" placeholder="BBVA - N° Cuenta / CCI" oninput="savePaymentSettings()"></div>
-              <div><input type="text" id="cfg-interbank" placeholder="Interbank - N° Cuenta / CCI" oninput="savePaymentSettings()"></div>
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="delivery-account-user" id="lbl-delivery-user">Correo / Cuenta / Licencia:</label>
+                <input type="text" id="delivery-account-user" placeholder="ejemplo@kazustore.pe / KEY-XXXX" required>
+              </div>
+              <div class="form-group flex-1" id="group-delivery-pass">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label for="delivery-account-pass" id="lbl-delivery-pass">Contraseña:</label>
+                  <label style="font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                    <input type="checkbox" id="delivery-toggle-pass"> Entregar Clave
+                  </label>
+                </div>
+                <input type="text" id="delivery-account-pass" placeholder="Dejar vacío = Solicitar acceso por código / enlace">
+              </div>
             </div>
-          </div>
 
-          <div id="sub-msg-globales">
-            <label class="lbl">Plantillas de atención y psicología de venta:</label>
-            <div class="sub-tabs" id="msg-global-tabs"></div>
-          </div>
+            <!-- Campos Separados: Perfil y PIN con activación opcional -->
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label for="delivery-profile-num">Número / Nombre de Perfil:</label>
+                  <label style="font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                    <input type="checkbox" id="delivery-toggle-profile" checked> Asignar Perfil
+                  </label>
+                </div>
+                <input type="text" id="delivery-profile-num" placeholder="Ej: Perfil 1, Perfil 2 o tu nombre">
+              </div>
 
-          <div id="sub-msg-servicio" style="display:none;">
+              <div class="form-group flex-1">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label for="delivery-pin-code">PIN de Seguridad (4 Dígitos):</label>
+                  <label style="font-size:0.75rem; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                    <input type="checkbox" id="delivery-toggle-pin" checked> Requiere PIN
+                  </label>
+                </div>
+                <input type="text" id="delivery-pin-code" placeholder="Ej: 8492" maxlength="8">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="delivery-customer-phone">WhatsApp del Cliente:</label>
+                <input type="tel" id="delivery-customer-phone" placeholder="Ej: 987654321">
+              </div>
+              <div class="form-group flex-1">
+                <label for="delivery-days">Días de Cobertura:</label>
+                <input type="number" id="delivery-days" value="30" min="1" max="9999">
+              </div>
+            </div>
+
             <div class="form-group">
-              <label class="lbl" for="msg-service-select">Selecciona la plataforma:</label>
-              <select id="msg-service-select" onchange="onServiceMsgChange()"></select>
+              <label for="delivery-upsell-select">Añadir Venta Cruzada (Upselling Sugerido):</label>
+              <select id="delivery-upsell-select">
+                <option value="none">Sin recomendación extra</option>
+                <option value="combo_armar">💡 Promo Combo: ¿Te gustaría armar combo con otro servicio con S/ 2.00 OFF?</option>
+                <option value="segunda_pantalla">📺 Combo 2da Pantalla: Para TV o Celular por S/ 12.00 (Ganancia S/ 5.00)</option>
+                <option value="disney_espn">🏆 Combo Disney+ (ESPN): Solo S/ 7.50 en combo (Precio normal S/ 8.50 | Ganancia S/ 2.00)</option>
+                <option value="max_combo">🍿 Combo Max HBO: Solo S/ 4.90 en combo (Precio normal S/ 5.90 | Ganancia S/ 1.40)</option>
+                <option value="spotify">🟢 Combo Spotify Premium: Solo S/ 6.50 en combo (Precio normal S/ 7.50 | Ganancia S/ 2.00)</option>
+                <option value="youtube">▶️ Combo YouTube Premium: Solo S/ 7.50 en combo (Precio normal S/ 8.50 | Ganancia S/ 3.00)</option>
+                <option value="canva">🎨 Combo Canva Pro (1 Año): Solo S/ 7.50 en combo (Precio normal S/ 8.50 | Ganancia S/ 3.00)</option>
+                <option value="office">☁️ Combo Microsoft 365 + 1TB (1 Año): Solo S/ 17.90 en combo (Precio normal S/ 19.90 | Ganancia S/ 7.90)</option>
+                <option value="windows">🪟 Combo Windows 11 / 10 Pro: Solo S/ 15.90 en combo (Precio normal S/ 17.90 | Ganancia S/ 7.90)</option>
+                <option value="iptv_combo">📡 Combo IPTV 1500+ Canales: Solo S/ 12.50 en combo (Precio normal S/ 13.90 | Ganancia S/ 4.50)</option>
+              </select>
             </div>
-            <div class="sub-tabs" id="msg-service-tabs"></div>
+
+            <button type="button" class="btn-action btn-save w-100" id="btn-save-subscription">💾 Registrar Cliente & Agendar Vencimiento</button>
+            <div id="delivery-status-feedback" class="status-feedback"></div>
+          </form>
+        </div>
+
+        <!-- Vista Previa de Entrega -->
+        <div class="panel-card sticky-card">
+          <div class="card-header">
+            <h2>📨 Mensaje de Entrega Formal</h2>
+            <div class="action-buttons-group">
+              <button class="btn-action btn-copy" id="copy-delivery-msg">📋 Copiar</button>
+              <button class="btn-action btn-wa" id="send-delivery-wa">🟢 Enviar por WhatsApp</button>
+            </div>
+          </div>
+          <div class="expiry-pill" id="calculated-expiry-badge">
+            📅 Estado de Cobertura: <strong id="expiry-date-display">--/--/----</strong>
+          </div>
+          <textarea id="delivery-message-textarea" class="message-textarea" rows="12" readonly aria-label="Mensaje de entrega de credenciales"></textarea>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 3: PLANTILLAS Y RESPUESTAS RÁPIDAS
+         ========================================== -->
+    <section id="tab-templates" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-templates">
+      <div class="templates-layout">
+        
+        <!-- Selector Lateral de Categorías y Plantillas -->
+        <div class="templates-sidebar">
+          <h3>1. Selecciona Categoría</h3>
+          <div class="template-categories-pills" id="template-categories-pills" role="tablist" aria-label="Categorías de plantillas">
+            <!-- Pestañas de categorías inyectadas dinámicamente -->
           </div>
 
-          <label class="lbl" for="msg-text" style="margin-top:10px;">Mensaje listo para WhatsApp:</label>
-          <textarea id="msg-text" style="min-height: 180px;"></textarea>
-          <button type="button" class="btn-copy" onclick="copy('msg-text', this)">📋 Copiar Mensaje</button>
+          <h3 class="mt-1">2. Respuestas Disponibles</h3>
+          <div class="templates-list-nav" id="templates-list-nav" role="navigation" aria-label="Lista de plantillas de ventas">
+            <!-- Plantillas de la categoría activa -->
+          </div>
         </div>
 
-        <!-- 1.4 ESTRATEGIAS Y RETENCIÓN -->
-        <div id="sec-estrategias" class="section-panel">
-          <label class="lbl">Selecciona una estrategia de captación o retención:</label>
-          <div class="sub-tabs" id="strat-tabs">
-            <button type="button" class="sub-btn active" onclick="loadStrategy('gancho_confianza', this)">🎣 Gancho de Confianza (Nuevos)</button>
-            <button type="button" class="sub-btn" onclick="loadStrategy('retencion_anticipada', this)">⏰ Retención Anticipada</button>
-            <button type="button" class="sub-btn" onclick="loadStrategy('combo_cine', this)">🍿 Combo Cine (Netflix + Max)</button>
-            <button type="button" class="sub-btn" onclick="loadStrategy('combo_pro', this)">💻 Combo Oficina (365 + Canva)</button>
+        <!-- Editor y Visualizador -->
+        <div class="templates-editor-panel">
+          <div class="card-header">
+            <h2 id="template-active-title">Selecciona una plantilla</h2>
+            <div class="action-buttons-group">
+              <button class="btn-action btn-copy" id="copy-template-btn">📋 Copiar Mensaje</button>
+              <button class="btn-action btn-wa" id="send-template-wa">🟢 Enviar a WhatsApp</button>
+            </div>
+          </div>
+          <textarea id="template-editor-textarea" class="message-textarea editor-mode" rows="14" aria-label="Editor de plantilla seleccionada"></textarea>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 4: DESPACHOS Y ENVÍOS FÍSICOS
+         ========================================== -->
+    <section id="tab-shipping" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-shipping">
+      <div class="module-grid">
+        
+        <!-- Formulario de Despacho -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>🛵 Coordinación de Envío</h2>
+          </div>
+          <div class="shipping-type-selector" role="group" aria-label="Tipo de despacho">
+            <button class="btn-pill active" data-shipping="contraentrega" type="button" aria-pressed="true">🛵 Contraentrega Lima</button>
+            <button class="btn-pill" data-shipping="provincia" type="button" aria-pressed="false">📦 Envío a Provincia (Olva / Shalom)</button>
           </div>
 
-          <label class="lbl" for="strat-text">Mensaje estratégico para enviar:</label>
-          <textarea id="strat-text" style="min-height: 200px;"></textarea>
-          <button type="button" class="btn-copy" onclick="copy('strat-text', this)">📋 Copiar Estrategia</button>
-        </div>
-      </section>
-
-      <!-- ========================================================
-           MÓDULO 2: PRODUCTOS FÍSICOS & TECH
-      ========================================================= -->
-      <section id="module-productos" class="view-module">
-        <div class="header-nav">
-          <button class="nav-btn prod-nav active" onclick="showProdSection(this, 'prod-catalogo')">🔥 Catálogo & Fichas de Venta</button>
-          <button class="nav-btn prod-nav" onclick="showProdSection(this, 'prod-combos')">📦 Combos Tech & Packs</button>
-          <button class="nav-btn prod-nav" onclick="showProdSection(this, 'prod-envios')">🛵 Coordinación de Entrega & Contraentrega</button>
-        </div>
-
-        <!-- 2.1 CATÁLOGO Y FICHAS INDIVIDUALES -->
-        <div id="sec-prod-catalogo" class="section-panel active">
-          <div class="grid-2">
-            <div>
-              <div class="form-group">
-                <label class="lbl" for="prod-select">Selecciona el Producto Físico:</label>
-                <select id="prod-select" onchange="onProductSelectChange()"></select>
+          <form id="shipping-form" class="standard-form">
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="ship-product-select">Producto a Despachar:</label>
+                <select id="ship-product-select"></select>
               </div>
-              <div class="sub-tabs" id="prod-subtabs"></div>
+              <div class="form-group flex-1">
+                <label for="ship-price">Precio del Producto (S/):</label>
+                <input type="number" id="ship-price" value="49.00" step="0.50">
+              </div>
             </div>
-            <div>
-              <label class="lbl" for="prod-text">Mensaje de Venta / Ficha Técnica para WhatsApp:</label>
-              <textarea id="prod-text"></textarea>
-              <button type="button" class="btn-copy" style="background:var(--prod-accent); color:#070b14;" onclick="copy('prod-text', this)">📋 Copiar Mensaje del Producto</button>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="ship-zone-select">Zona de Cobertura:</label>
+                <select id="ship-zone-select">
+                  <option value="0">Chorrillos (Envío Gratis)</option>
+                  <option value="10">Barranco / Miraflores / Surco (+S/ 10.00)</option>
+                  <option value="12">San Isidro / Lince / Jesús María (+S/ 12.00)</option>
+                  <option value="15">Lima Norte / Lima Este (+S/ 15.00)</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="ship-shipping-cost">Costo de Flete (S/):</label>
+                <input type="number" id="ship-shipping-cost" value="0.00" readonly>
+              </div>
             </div>
-          </div>
+
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="ship-name">Nombre y Apellidos:</label>
+                <input type="text" id="ship-name" placeholder="Ej: Roberto Gómez">
+              </div>
+              <div class="form-group flex-1">
+                <label for="ship-phone">Teléfono WhatsApp:</label>
+                <input type="tel" id="ship-phone" placeholder="987654321">
+              </div>
+            </div>
+
+            <div class="form-group" id="group-lima-address">
+              <label for="ship-address">Dirección / Referencia de Entrega:</label>
+              <input type="text" id="ship-address" placeholder="Av. Huaylas 450, Chorrillos (Frente a Metro)">
+            </div>
+
+            <div class="form-row hidden" id="group-provincia-details">
+              <div class="form-group flex-1">
+                <label for="ship-dni">DNI / Carnet de Extranjería:</label>
+                <input type="text" id="ship-dni" placeholder="78654321">
+              </div>
+              <div class="form-group flex-1">
+                <label for="ship-agency">Agencia Destino:</label>
+                <select id="ship-agency">
+                  <option value="Shalom Agencia">Shalom (Recojo en Agencia)</option>
+                  <option value="Olva Courier Domicilio">Olva Courier (Entrega a Domicilio)</option>
+                </select>
+              </div>
+            </div>
+          </form>
         </div>
 
-        <!-- 2.2 COMBOS TECH -->
-        <div id="sec-prod-combos" class="section-panel">
-          <div class="grid-2">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <label class="lbl" style="color:var(--text);">Selecciona productos y regalos para el Pack:</label>
-                <button type="button" onclick="clearProdCombos()" style="background:none; border:none; color:var(--text-muted); font-size:0.75rem; cursor:pointer;">[Limpiar selección]</button>
-              </div>
-              <div class="chips-grid" id="prod-combo-chips"></div>
+        <!-- Vista Previa de Despacho -->
+        <div class="panel-card sticky-card">
+          <div class="card-header">
+            <h2>📦 Mensaje de Confirmación</h2>
+            <div class="action-buttons-group">
+              <button class="btn-action btn-copy" id="copy-shipping-msg">📋 Copiar</button>
+              <button class="btn-action btn-wa" id="send-shipping-wa">🟢 Enviar WhatsApp</button>
+            </div>
+          </div>
+          <div class="total-charge-box">
+            <span>Total a Cobrar al Cliente:</span>
+            <strong id="ship-total-charge" class="text-cyan">S/ 49.00</strong>
+          </div>
+          <textarea id="shipping-message-textarea" class="message-textarea" rows="12" readonly aria-label="Mensaje de confirmación de despacho"></textarea>
+        </div>
 
-              <div style="display:flex; gap:8px; align-items:center;">
-                <div style="flex:1;">
-                  <label class="lbl" for="prod-combo-disc">Descuento aplicado:</label>
-                  <select id="prod-combo-disc" onchange="calcProdComboPrice()">
-                    <option value="10">10% Descuento</option>
-                    <option value="15" selected>15% Descuento (Pack Estrella)</option>
-                    <option value="20">20% Descuento</option>
-                    <option value="0">Precio Normal</option>
-                  </select>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         TAB 5: KAZUPUNTOS & FIDELIZACIÓN CLOUD
+         ========================================== -->
+    <section id="tab-kazucard" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-kazucard">
+      <div class="module-grid">
+        
+        <!-- Registro de Sellos y Puntos -->
+        <div class="panel-card">
+          <div class="card-header">
+            <h2>🎁 Tarjeta Digital KazuPuntos (Sellos & Recompensas)</h2>
+          </div>
+          <p class="section-desc">Acumula o canjea KazuPuntos para tus clientes frecuentes. Se sincroniza con Supabase en tiempo real.</p>
+
+          <form id="kazucard-form" class="standard-form">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="kc-phone-input">Teléfono WhatsApp del Cliente:</label>
+                <div style="display:flex; gap:0.5rem;">
+                  <input type="tel" id="kc-phone-input" placeholder="987654321" required style="flex:1;">
+                  <button type="button" class="btn-action btn-sm" id="kc-audit-verify-btn" style="white-space:nowrap; background:#0284c7; color:#fff;" title="Auditar si el cliente realmente tiene esos sellos o compras">
+                    🔍 Verificar Historial Real
+                  </button>
                 </div>
-                <div style="flex:1;">
-                  <label class="lbl" for="prod-combo-manual">O Precio Oferta Fijo (S/):</label>
-                  <input type="number" id="prod-combo-manual" placeholder="Ej: 119.00" oninput="manualProdComboPrice()">
-                </div>
               </div>
-
-              <div class="price-box">
-                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                  <span>Total Individual: <s id="prod-combo-reg" style="color:var(--text-muted);">S/ 0.00</s></span>
-                  <span>Precio Oferta Pack: <strong id="prod-combo-final" style="color:var(--prod-accent); font-size:1.1rem;">S/ 0.00</strong></span>
-                </div>
-                <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border); padding-top:6px;">
-                  <span>Modalidad: <b>Contraentrega / Envío</b></span>
-                  <span id="prod-combo-saving" style="color:var(--accent); font-weight:700;">Ahorro: S/ 0.00</span>
-                </div>
+              <div class="form-group flex-1">
+                <label for="kc-amount-input">Cantidad de Puntos / Sellos:</label>
+                <input type="number" id="kc-amount-input" value="1" min="1" max="10">
+              </div>
+            </div>
+            
+            <!-- Caja de Auditoría en Tiempo Real de Sellos del Cliente -->
+            <div id="kc-client-audit-box" class="audit-verification-box hidden" style="background:rgba(2, 132, 199, 0.08); border:1px solid rgba(2, 132, 199, 0.3); border-radius:8px; padding:0.85rem; margin-bottom:1rem; font-size:0.85rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <strong id="audit-client-name" style="color:#00f2fe;">Auditoría de Cliente</strong>
+                <span id="audit-stamps-pill" style="background:#059669; color:#fff; padding:2px 8px; border-radius:12px; font-weight:700; font-size:0.75rem;">0 Sellos Reales</span>
+              </div>
+              <div id="audit-client-details" style="color:var(--text-muted); line-height:1.4;">
+                Consultando libro contable...
               </div>
             </div>
 
-            <div>
-              <label class="lbl" for="prod-combo-text">Mensaje del Pack Físico para WhatsApp:</label>
-              <textarea id="prod-combo-text"></textarea>
-              <button type="button" class="btn-copy" style="background:var(--prod-accent); color:#070b14;" onclick="copy('prod-combo-text', this)">📋 Copiar Mensaje del Pack Tech</button>
+            <div class="form-row">
+              <div class="form-group flex-1">
+                <label for="kc-action-select">Tipo de Operación:</label>
+                <select id="kc-action-select">
+                  <option value="earned">Sumar KazuPuntos (+ Ganados por Compra)</option>
+                  <option value="redeemed">Canjear KazuPuntos (- Reclamar Premio S/ 3 o S/ 8)</option>
+                  <option value="use_referral_credits">💰 Canjear Créditos por Referidos (Descontar y Dejar en S/ 0)</option>
+                </select>
+              </div>
+              <div class="form-group flex-1">
+                <label for="kc-reason-input">Motivo / Servicio:</label>
+                <input type="text" id="kc-reason-input" value="Compra Netflix UHD 4K">
+              </div>
+              <div class="form-group flex-1">
+                <label for="kc-festivity-select">Estilo de Sello (Festividad):</label>
+                <select id="kc-festivity-select">
+                  <option value="auto">⚡ Automático (Según temporada activa)</option>
+                  <option value="halloween">🎃 Halloween (Calabaza Spooky)</option>
+                  <option value="navidad">🎄 Navidad (Pino Navideño)</option>
+                  <option value="standard">⚡ Estándar KazuStore (Rayo Neón)</option>
+                </select>
+              </div>
             </div>
+
+            <button type="button" class="btn-action btn-save w-100" id="kc-register-btn">⚡ Registrar KazuPuntos en Supabase</button>
+            <div id="kc-status-feedback" class="status-feedback"></div>
+          </form>
+
+          <div class="message-preview-container mt-1">
+            <div class="message-preview-header">
+              <span>Notificación para el Cliente</span>
+              <button class="btn-action btn-copy" id="kc-copy-msg-btn">📋 Copiar</button>
+            </div>
+            <textarea id="kc-message-result" class="message-textarea" rows="5" readonly aria-label="Notificación generada para el cliente de KazuPuntos"></textarea>
           </div>
         </div>
 
-        <!-- 2.3 COORDINACIÓN DE ENVÍOS & CONTRAENTREGA -->
-        <div id="sec-prod-envios" class="section-panel">
-          <div class="sub-tabs" id="prod-shipping-tabs">
-            <button type="button" class="sub-btn prod-sub active" onclick="loadShippingTemplate('contraentrega', this)">🛵 Contraentrega (Lima / Chorrillos)</button>
-            <button type="button" class="sub-btn prod-sub" onclick="loadShippingTemplate('envio_nacional', this)">📦 Envíos a Provincias (Olva / Shalom)</button>
-            <button type="button" class="sub-btn prod-sub" onclick="loadShippingTemplate('confirmacion_datos', this)">📝 Formulario de Datos del Cliente</button>
+        <!-- Métricas Cloud & Alertas de Renovación -->
+        <div class="panel-card sticky-card">
+          <div class="card-header">
+            <h2>☁️ Métricas Cloud & Suscripciones</h2>
+            <button class="btn-sm btn-ghost" id="refresh-cloud-btn">🔄 Actualizar</button>
           </div>
-          <label class="lbl" for="prod-shipping-text">Mensaje para coordinar despacho y entrega:</label>
-          <textarea id="prod-shipping-text" style="min-height: 200px;"></textarea>
-          <button type="button" class="btn-copy" style="background:var(--prod-accent); color:#070b14;" onclick="copy('prod-shipping-text', this)">📋 Copiar Mensaje de Envío</button>
-        </div>
-      </section>
 
-      <!-- ========================================================
-           MÓDULO 3: FIDELIZACIÓN KAZUCARD & SELLOS (SUPABASE)
-      ========================================================= -->
-      <section id="module-kazucard" class="view-module">
-        <div class="section-panel active">
-          <div class="grid-2">
-            <div>
-              <div class="form-group">
-                <label class="lbl" for="kc-admin-phone">Número de Teléfono del Cliente:</label>
-                <input type="tel" id="kc-admin-phone" placeholder="Ej: 987654321">
-              </div>
-
-              <div class="form-group">
-                <label class="lbl" for="kc-admin-action">Acción de Sellos:</label>
-                <div style="display:flex; gap:8px;">
-                  <select id="kc-admin-action" style="flex:1;">
-                    <option value="earned">⭐ Otorgar Sellos (+)</option>
-                    <option value="redeemed">🎁 Canjear Premio / Restar (-)</option>
-                  </select>
-                  <input type="number" id="kc-admin-amount" value="1" min="1" max="5" style="width:75px;">
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="lbl" for="kc-admin-reason">Motivo / Servicio Comprado:</label>
-                <input type="text" id="kc-admin-reason" placeholder="Ej: Compra Netflix 30 días">
-              </div>
-
-              <button type="button" class="btn-copy" style="background:var(--accent); color:#ffffff;" onclick="submitKazuCardStamp()">⚡ Guardar y Actualizar en Base de Datos</button>
-              <div id="kc-admin-status" style="margin-top:10px; font-size:0.85rem; color:#34d399; font-weight:600;"></div>
+          <div class="financial-metrics-grid">
+            <div class="metric-box">
+              <span class="metric-label">Ventas Brutas</span>
+              <span class="metric-value text-cyan" id="cloud-metric-gross">S/ 0.00</span>
             </div>
-
-            <div>
-              <label class="lbl" for="kc-client-link-text">Enlace Firmado para Enviar al Cliente:</label>
-              <textarea id="kc-client-link-text" placeholder="Aquí aparecerá el enlace directo del cliente..."></textarea>
-              <button type="button" class="btn-copy" onclick="copy('kc-client-link-text', this)">📋 Copiar Enlace Directo para WhatsApp</button>
+            <div class="metric-box gain">
+              <span class="metric-label">Ganancia Neta</span>
+              <span class="metric-value text-emerald" id="cloud-metric-profit">S/ 0.00</span>
             </div>
+            <div class="metric-box">
+              <span class="metric-label">Clientes Totales</span>
+              <span class="metric-value" id="cloud-metric-clients">0</span>
+            </div>
+          </div>
+
+          <h3 class="cloud-subtitle">⏳ Suscripciones Próximas a Vencer (&lt; 3 Días)</h3>
+          <div id="cloud-expiring-list" class="cloud-expiring-container">
+            <!-- Renderizado dinámico -->
           </div>
         </div>
-      </section>
 
-      <!-- ========================================================
-           MÓDULO 4: MÉTRICAS Y ALERTAS DE RENOVACIÓN (SUPABASE)
-      ========================================================= -->
-      <section id="module-metricas" class="view-module">
-        <div class="section-panel active">
-          <div class="metrics-grid">
-            <div class="metric-card">
-              <div class="metric-title">Ventas Totales</div>
-              <div id="metric-sales" class="metric-value" style="color:var(--primary);">S/ 0.00</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-title">Ganancia Neta</div>
-              <div id="metric-profit" class="metric-value" style="color:var(--accent);">S/ 0.00</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-title">Clientes Registrados</div>
-              <div id="metric-clients" class="metric-value" style="color:#818cf8;">0</div>
-            </div>
-          </div>
+      </div>
+    </section>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <label class="lbl" style="font-size:0.95rem; color:#fff;">🚨 Cuentas Próximas a Vencer (Próximos 3 días):</label>
-            <button type="button" onclick="loadExpiringSubscriptions()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; cursor:pointer; font-weight:700;">[Actualizar]</button>
-          </div>
-          <div id="expiring-list" style="font-size:0.85rem; color:var(--text-muted); background:#070b14; border:1px solid var(--border); padding:12px; border-radius:8px;">
-            Cargando suscripciones...
-          </div>
+    <!-- ==========================================
+         TAB 6: CONFIGURACIÓN PRIVADA DE CUENTAS
+         ========================================== -->
+    <section id="tab-settings" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-settings">
+      <div class="panel-card max-w-700 mx-auto">
+        <div class="card-header">
+          <h2>⚙️ Cuentas de Cobro (Almacenamiento Local Seguro)</h2>
+          <button class="btn-action btn-save" id="save-settings-btn">💾 Guardar Cuentas</button>
         </div>
-      </section>
-    </main>
-  </div>
+        <p class="section-desc">Estos datos se guardan en tu navegador (LocalStorage). Se inyectarán automáticamente en las plantillas comerciales sin exponerse a internet.</p>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
-  <script src="services.js"></script>
-  <script src="products.js"></script>
-  <script src="app.js"></script>
+        <form id="settings-form" class="standard-form">
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="set-yape-num">Número Yape:</label>
+              <input type="text" id="set-yape-num" value="987 654 321">
+            </div>
+            <div class="form-group flex-1">
+              <label for="set-yape-name">Titular Yape:</label>
+              <input type="text" id="set-yape-name" value="KazuStore Perú">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label for="set-plin-num">Número Plin:</label>
+              <input type="text" id="set-plin-num" value="987 654 321">
+            </div>
+            <div class="form-group flex-1">
+              <label for="set-plin-name">Titular Plin:</label>
+              <input type="text" id="set-plin-name" value="KazuStore Perú">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="set-bcp">Cuenta BCP (Ahorros / CCI):</label>
+            <input type="text" id="set-bcp" value="194-XXXXXXXX-0-XX (CCI: 002-194XXXXXXXXX)">
+          </div>
+
+          <div class="form-group">
+            <label for="set-bbva">Cuenta BBVA:</label>
+            <input type="text" id="set-bbva" value="0011-XXXX-XXXXXXXXXX">
+          </div>
+
+          <div class="form-group">
+            <label for="set-interbank">Cuenta Interbank:</label>
+            <input type="text" id="set-interbank" value="898-XXXXXXXXXX">
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notificación Toast de Portapapeles Accesible -->
+  <div id="hub-toast" class="hub-toast hidden" role="status" aria-live="polite">¡Copiado al portapapeles con éxito! 📋</div>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>
