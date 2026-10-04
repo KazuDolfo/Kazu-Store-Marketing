@@ -302,7 +302,8 @@ class SupabaseService {
     if (!cleanPhone || cleanPhone.length < 8) return { success: false, error: "Teléfono no válido" };
 
     const safeAmount = Math.max(1, Math.min(20, parseInt(amount, 10) || 1));
-    const safeAction = action === "redeemed" ? "redeemed" : "earned";
+    const validActions = ["earned", "redeemed", "claim_coupon_3", "reset_full_card_8", "use_referral_credits"];
+    const safeAction = validActions.includes(action) ? action : "earned";
     const safeReason = String(reason || "Compra KazuStore").trim().slice(0, 100);
     const safeFestivity = String(festivity || "auto").trim().slice(0, 20);
 

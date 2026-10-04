@@ -298,10 +298,22 @@ export function initKazuCard(showToast) {
   async function executeStampOperation(explicitAction) {
     const rawPhone = phoneInput.value.trim();
     const phone = rawPhone.replace(/[^\d+]/g, ""); // Solo dígitos y símbolo +
-    const rawAmount = parseInt(amountInput.value, 10);
-    const amount = isNaN(rawAmount) ? 1 : Math.max(1, Math.min(20, rawAmount));
     const action = explicitAction || (actionSelect ? actionSelect.value : "earned");
-    const reason = reasonInput.value.trim().slice(0, 100);
+    const rawAmount = parseInt(amountInput.value, 10);
+    // Para canje de cupón o reinicio de tarjeta completa, la operación no depende del campo cantidad
+    const amount = (action === "claim_coupon_3" || action === "reset_full_card_8" || action === "use_referral_credits")
+      ? 1 
+      : (isNaN(rawAmount) ? 1 : Math.max(1, Math.min(20, rawAmount)));
+
+    let reason = reasonInput.value.trim().slice(0, 100);
+    if (action === "claim_coupon_3" && (!reason || reason === "Compra KazuStore" || reason.includes("Netflix"))) {
+      reason = "Cupón S/ 3.00 OFF Renovación";
+    } else if (action === "reset_full_card_8" && (!reason || reason === "Compra KazuStore" || reason.includes("Netflix"))) {
+      reason = "Canje Tarjeta Completa S/ 8.00 Crédito";
+    } else if (action === "use_referral_credits" && (!reason || reason === "Compra KazuStore" || reason.includes("Netflix"))) {
+      reason = "Canje Saldo Amigos Referidos";
+    }
+
     const festivitySelect = document.getElementById("kc-festivity-select");
     const festivity = festivitySelect ? festivitySelect.value : "auto";
 
