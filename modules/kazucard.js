@@ -446,6 +446,10 @@ ${clientUrl}
     });
   }
 
+  window.refreshKazuHubState = () => {
+    return Promise.allSettled([loadMetrics(), loadExpiring(), loadClients()]);
+  };
+
   // Carga paralela concurrente para respuesta instantánea (non-blocking)
-  Promise.allSettled([loadMetrics(), loadExpiring(), loadClients()]);
+  window.refreshKazuHubState();
 }

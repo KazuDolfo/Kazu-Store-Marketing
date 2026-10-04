@@ -239,6 +239,9 @@ Cualquier consulta técnica cuentas con nuestro soporte directo. ¡Que disfrutes
         if (typeof showToast === "function") {
           showToast(`¡Suscripción agendada! Vence: ${expiryDate}`);
         }
+        if (typeof window.refreshKazuHubState === "function") {
+          window.refreshKazuHubState();
+        }
       } else {
         deliveryStatus.textContent = "❌ No se pudo guardar la suscripción.";
         deliveryStatus.className = "status-feedback text-rose";

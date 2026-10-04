@@ -211,21 +211,55 @@ class SupabaseService {
   }
 
   async getExpiringSubscriptions() {
+    let cloudExpiring = [];
     const client = this.getClient();
-    if (!client || !navigator.onLine) {
-      return this.getCachedExpiring();
-    }
-    try {
-      const { data, error } = await client.from("v_expiring_soon_subscriptions").select("*").limit(10);
-      if (error) throw error;
-      if (data && data.length > 0) {
-        localStorage.setItem("kazustore_cached_expiring_v1", JSON.stringify(data));
+
+    if (client && navigator.onLine) {
+      try {
+        const { data, error } = await client.from("v_expiring_soon_subscriptions").select("*").limit(20);
+        if (!error && Array.isArray(data)) {
+          cloudExpiring = data;
+        }
+      } catch (e) {
+        console.warn("Fallo al obtener suscripciones de Supabase, revisando almacenamiento local:", e);
       }
-      return data || [];
-    } catch (e) {
-      // Fallback silencioso a caché local
-      return this.getCachedExpiring();
     }
+
+    // Obtener suscripciones locales y calcular días restantes dinámicamente
+    const localSubs = JSON.parse(localStorage.getItem("kazustore_local_subscriptions_v1") || "[]");
+    const now = new Date();
+
+    const calculatedLocal = localSubs.map(s => {
+      let daysLeft = s.days_remaining;
+      if (s.end_date) {
+        // Formato dd/mm/yyyy
+        const parts = s.end_date.split("/");
+        if (parts.length === 3) {
+          const target = new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+          const diffTime = target - now;
+          daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+      }
+      return {
+        ...s,
+        days_remaining: daysLeft !== undefined ? daysLeft : s.days_remaining
+      };
+    }).filter(s => s.days_remaining !== undefined && s.days_remaining <= 5 && s.days_remaining >= -1);
+
+    // Unificar cloud + local sin duplicados
+    const combined = [...cloudExpiring];
+    calculatedLocal.forEach(ls => {
+      const exists = combined.some(c => c.client_phone === ls.client_phone && c.product_name === ls.product_name);
+      if (!exists) {
+        combined.push(ls);
+      }
+    });
+
+    // Ordenar de menor a mayor días restantes
+    combined.sort((a, b) => (Number(a.days_remaining) || 0) - (Number(b.days_remaining) || 0));
+
+    localStorage.setItem("kazustore_cached_expiring_v1", JSON.stringify(combined.slice(0, 20)));
+    return combined;
   }
 
   getCachedExpiring() {
