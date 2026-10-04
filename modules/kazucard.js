@@ -113,15 +113,33 @@ export function initKazuCard(showToast) {
       viewBtn.style.cssText = "font-size:0.85rem; text-decoration:none; padding:2px 4px;";
       viewBtn.textContent = "🔗";
 
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.title = "Eliminar cliente por completo (Limpia número, sellos y referidos)";
+      delBtn.style.cssText = "background:transparent; border:none; color:#f43f5e; cursor:pointer; font-size:0.9rem; padding:2px 4px; border-radius:4px; transition:background 0.15s ease;";
+      delBtn.textContent = "🗑️";
+      delBtn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const conf = confirm(`¿Estás seguro de eliminar a ${c.nickname || c.phone}? Esto limpiará permanentemente su registro, sellos y código de referido.`);
+        if (!conf) return;
+
+        delBtn.textContent = "⏳";
+        delBtn.disabled = true;
+        await dbService.deleteClient(c.id, c.phone);
+        showToast(`Cliente ${c.phone} eliminado.`);
+        loadClients();
+      });
+
       badgesBox.appendChild(stampsBadge);
       badgesBox.appendChild(viewBtn);
+      badgesBox.appendChild(delBtn);
 
       row.appendChild(infoBox);
       row.appendChild(badgesBox);
 
       // Clic para cargar en el formulario
       row.addEventListener("click", (e) => {
-        if (e.target.tagName.toLowerCase() === "a") return;
+        if (e.target.tagName.toLowerCase() === "a" || e.target.tagName.toLowerCase() === "button") return;
         if (phoneInput) phoneInput.value = c.phone;
         if (auditBtn) auditBtn.click();
         row.style.borderColor = "var(--color-cyan)";

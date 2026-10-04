@@ -116,6 +116,45 @@ class SupabaseService {
     return Array.from(map.values());
   }
 
+  async deleteClient(clientId, phone) {
+    const cleanPhone = (phone || "").trim().replace(/[^\d+]/g, "").slice(0, 16);
+    const client = this.getClient();
+
+    if (client && navigator.onLine) {
+      try {
+        // 1. Eliminar movimientos del libro contable de sellos
+        if (clientId) {
+          await client.from("stamps_ledger").delete().eq("client_id", clientId);
+          await client.from("clients").delete().eq("id", clientId);
+        } else if (cleanPhone) {
+          const { data: found } = await client.from("clients").select("id").eq("phone", cleanPhone).maybeSingle();
+          if (found) {
+            await client.from("stamps_ledger").delete().eq("client_id", found.id);
+            await client.from("clients").delete().eq("id", found.id);
+          }
+        }
+      } catch (err) {
+        console.warn("Error al borrar cliente en Supabase:", err);
+      }
+    }
+
+    // 2. Limpiar rastros locales (offline ledger, cache de clientes y suscripciones)
+    if (cleanPhone) {
+      const pending = this.getPendingStamps().filter(s => !s.phone || !s.phone.includes(cleanPhone));
+      localStorage.setItem(OFFLINE_STAMPS_KEY, JSON.stringify(pending));
+
+      const localSubs = JSON.parse(localStorage.getItem("kazustore_local_subscriptions_v1") || "[]")
+        .filter(s => !s.client_phone || !s.client_phone.includes(cleanPhone));
+      localStorage.setItem("kazustore_local_subscriptions_v1", JSON.stringify(localSubs));
+
+      const cachedClients = JSON.parse(localStorage.getItem("kazustore_cached_clients_list_v1") || "[]")
+        .filter(c => c.phone !== cleanPhone && c.id !== clientId);
+      localStorage.setItem("kazustore_cached_clients_list_v1", JSON.stringify(cachedClients));
+    }
+
+    return { success: true };
+  }
+
   async getClientAudit(phone) {
     const cleanPhone = (phone || "").trim().replace(/[^\d+]/g, "").slice(0, 16);
     if (!cleanPhone || cleanPhone.length < 8) return null;
