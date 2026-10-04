@@ -480,18 +480,9 @@
             </div>
 
             <div class="form-row">
-              <div class="form-group flex-1">
-                <label for="kc-action-select">Operación Seleccionada:</label>
-                <select id="kc-action-select">
-                  <option value="earned">➕ Sumar Puntos (+ Ganados por Compra)</option>
-                  <option value="claim_coupon_3">🎟️ Aplicar Cupón S/ 3 OFF (Hito 5 Sellos - No Resta)</option>
-                  <option value="reset_full_card_8">🏆 Canjear Tarjeta Llena S/ 8 (Reiniciar a 0 Sellos)</option>
-                  <option value="use_referral_credits">💰 Canjear Saldo Referidos (Aplicar y Restablecer)</option>
-                </select>
-              </div>
-              <div class="form-group flex-1">
+              <div class="form-group flex-2">
                 <label for="kc-reason-input">Motivo / Servicio:</label>
-                <input type="text" id="kc-reason-input" value="Compra Netflix UHD 4K">
+                <input type="text" id="kc-reason-input" value="Compra Netflix UHD 4K" placeholder="Ej. Renovación Disney+, Compra Spotify...">
               </div>
               <div class="form-group flex-1">
                 <label for="kc-festivity-select">Estilo Visual del Sello:</label>
@@ -504,20 +495,23 @@
               </div>
             </div>
 
-            <!-- Botones de Acción de Fidelidad Exactos y Comerciales -->
-            <div class="action-buttons-group mt-1" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem;">
-              <button type="button" class="btn-action btn-save" id="kc-btn-add" style="background:#059669; color:#fff; padding:0.75rem 0.85rem; font-weight:700;">
-                ➕ Sumar Puntos (+)
-              </button>
-              <button type="button" class="btn-action" id="kc-btn-coupon-3" style="background:#0284c7; color:#fff; padding:0.75rem 0.85rem; font-weight:700;" title="Aplica el descuento de S/ 3.00 sin descontar sellos de la tarjeta">
-                🎟️ Cupón S/ 3 OFF (Sello 5)
-              </button>
-              <button type="button" class="btn-action" id="kc-btn-redeem-10" style="background:#e11d48; color:#fff; padding:0.75rem 0.85rem; font-weight:700;" title="Canjea S/ 8.00 de crédito y reinicia la tarjeta a 0 sellos para un nuevo ciclo">
-                🏆 Canje S/ 8 (Reiniciar a 0)
-              </button>
-              <button type="button" class="btn-action btn-copy" id="kc-btn-credits" style="background:#8b5cf6; color:#fff; padding:0.75rem 0.85rem; font-weight:700;" title="Aplica el saldo acumulado por amigos recomendados">
-                💰 Canjear Saldo Referidos
-              </button>
+            <!-- Botones de Acción Directa: 1 Clic por Operación -->
+            <div style="margin-top: 1rem;">
+              <span style="display:block; font-size:0.8rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.5px;">Acción a Realizar:</span>
+              <div class="action-buttons-group" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.6rem;">
+                <button type="button" class="btn-action btn-save" id="kc-btn-add" style="background:#059669; color:#fff; padding:0.8rem 1rem; font-weight:700; border-radius:6px; cursor:pointer;" title="Suma la cantidad indicada en 'Cantidad de Puntos / Sellos'">
+                  ➕ Sumar Puntos (+)
+                </button>
+                <button type="button" class="btn-action" id="kc-btn-coupon-3" style="background:#0284c7; color:#fff; padding:0.8rem 1rem; font-weight:700; border-radius:6px; cursor:pointer;" title="Aplica el descuento de S/ 3.00 sin restar sellos">
+                  🎟️ Cupón S/ 3 OFF (Sello 5)
+                </button>
+                <button type="button" class="btn-action" id="kc-btn-redeem-10" style="background:#e11d48; color:#fff; padding:0.8rem 1rem; font-weight:700; border-radius:6px; cursor:pointer;" title="Canjea S/ 8.00 de crédito y reinicia la tarjeta a 0 sellos">
+                  🏆 Canje S/ 8 (Reiniciar a 0)
+                </button>
+                <button type="button" class="btn-action btn-copy" id="kc-btn-credits" style="background:#8b5cf6; color:#fff; padding:0.8rem 1rem; font-weight:700; border-radius:6px; cursor:pointer;" title="Canjea el saldo acumulado por amigos recomendados">
+                  💰 Canjear Saldo Referidos
+                </button>
+              </div>
             </div>
             <div id="kc-status-feedback" class="status-feedback mt-1"></div>
           </form>
