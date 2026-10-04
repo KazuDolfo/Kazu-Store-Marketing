@@ -54,7 +54,11 @@
   <!-- Content Security Policy & Security Meta -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <!-- Conexión ultrarrápida a Supabase (DNS Prefetch & Preconnect TLS) -->
+  <link rel="dns-prefetch" href="https://ukktilhrpadjmadrlocr.supabase.co">
+  <link rel="preconnect" href="https://ukktilhrpadjmadrlocr.supabase.co" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <!-- Supabase CDN Client con fallback -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="styles.css">

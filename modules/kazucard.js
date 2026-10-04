@@ -428,14 +428,12 @@ ${clientUrl}
 
   if (refreshCloudBtn) {
     refreshCloudBtn.addEventListener("click", () => {
-      loadMetrics();
-      loadExpiring();
-      loadClients();
-      showToast("Métricas y clientes actualizados.");
+      Promise.allSettled([loadMetrics(), loadExpiring(), loadClients()]).then(() => {
+        showToast("Métricas y clientes actualizados.");
+      });
     });
   }
 
-  loadMetrics();
-  loadExpiring();
-  loadClients();
+  // Carga paralela concurrente para respuesta instantánea (non-blocking)
+  Promise.allSettled([loadMetrics(), loadExpiring(), loadClients()]);
 }

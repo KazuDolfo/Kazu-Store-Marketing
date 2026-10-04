@@ -125,20 +125,26 @@ class SupabaseService {
           .maybeSingle();
 
         if (clientRecord) {
-          const { data: ledger } = await client
-            .from("stamps_ledger")
-            .select("id, amount, action, reason, festivity, created_at, balance_after")
-            .eq("client_id", clientRecord.id)
-            .order("created_at", { ascending: false });
-
-          // Validar amigos calificados (que compraron)
           const myCode = clientRecord.referral_code || ('KZ-' + cleanPhone.slice(-4));
-          const { data: refFriends } = await client
-            .from("clients")
-            .select("id, phone, stamps_balance")
-            .eq("referred_by", myCode);
 
-          const qualified = (refFriends || []).filter(f => (f.stamps_balance || 0) >= 2);
+          // Consultas paralelas en Supabase para reducir la latencia a la mitad
+          const [ledgerRes, refFriendsRes] = await Promise.all([
+            client
+              .from("stamps_ledger")
+              .select("id, amount, action, reason, festivity, created_at, balance_after")
+              .eq("client_id", clientRecord.id)
+              .order("created_at", { ascending: false })
+              .limit(30),
+            client
+              .from("clients")
+              .select("id, phone, stamps_balance")
+              .eq("referred_by", myCode)
+              .limit(50)
+          ]);
+
+          const ledger = ledgerRes.data || [];
+          const refFriends = refFriendsRes.data || [];
+          const qualified = refFriends.filter(f => (f.stamps_balance || 0) >= 2);
 
           return {
             source: "supabase",
@@ -146,8 +152,8 @@ class SupabaseService {
             stamps_balance: clientRecord.stamps_balance || 0,
             referral_credits: clientRecord.referral_credits !== undefined ? Number(clientRecord.referral_credits) : qualified.length,
             qualified_friends: qualified.length,
-            total_friends: (refFriends || []).length,
-            ledger: ledger || []
+            total_friends: refFriends.length,
+            ledger: ledger
           };
         }
       } catch (err) {
