@@ -209,8 +209,9 @@ Cualquier consulta técnica cuentas con nuestro soporte directo. ¡Que disfrutes
       const phone = customerPhone ? customerPhone.value.trim() : "";
       const days = parseInt(daysInput.value || 30, 10);
       const expiryDate = calculateExpiryDate(days);
-      const user = accountUser.value.trim();
-      const pin = profilePin.value.trim();
+      const user = accountUser ? accountUser.value.trim() : "";
+      const pass = accountPass ? accountPass.value.trim() : "";
+      const pin = pinCodeInput ? pinCodeInput.value.trim() : "";
 
       if (!name) {
         deliveryStatus.textContent = "⚠️ Ingresa el nombre del cliente.";

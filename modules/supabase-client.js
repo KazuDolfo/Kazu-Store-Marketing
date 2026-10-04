@@ -53,12 +53,17 @@ class SupabaseService {
       try {
         const { data, error } = await client
           .from("clients")
-          .select("id, phone, nickname, name, stamps_balance, referral_credits, referral_code, referred_by, created_at")
+          .select("id, phone, nickname, stamps_balance, created_at")
           .order("created_at", { ascending: false })
           .limit(100);
         if (!error && Array.isArray(data)) {
-          localStorage.setItem("kazustore_cached_clients_list_v1", JSON.stringify(data));
-          return data;
+          const mapped = data.map(c => ({
+            ...c,
+            referral_code: 'KZ-' + (c.phone ? c.phone.slice(-4) : 'VIP'),
+            referral_credits: 0
+          }));
+          localStorage.setItem("kazustore_cached_clients_list_v1", JSON.stringify(mapped));
+          return mapped;
         }
       } catch (err) {
         console.warn("Fallo al obtener clientes de Supabase, usando local:", err);
@@ -120,12 +125,12 @@ class SupabaseService {
       try {
         const { data: clientRecord } = await client
           .from("clients")
-          .select("id, phone, nickname, stamps_balance, referral_credits, referral_code, referred_by")
+          .select("id, phone, nickname, stamps_balance")
           .eq("phone", cleanPhone)
           .maybeSingle();
 
         if (clientRecord) {
-          const myCode = clientRecord.referral_code || ('KZ-' + cleanPhone.slice(-4));
+          const myCode = 'KZ-' + cleanPhone.slice(-4);
 
           // Consultas paralelas en Supabase para reducir la latencia a la mitad
           const [ledgerRes, refFriendsRes] = await Promise.all([
@@ -270,7 +275,7 @@ class SupabaseService {
         if (!clientRecord && cleanPhone) {
           const { data: created } = await client
             .from("clients")
-            .insert([{ phone: cleanPhone, name: name || "Cliente" }])
+            .insert([{ phone: cleanPhone, nickname: name || "Cliente" }])
             .select("id")
             .single();
           clientRecord = created;
