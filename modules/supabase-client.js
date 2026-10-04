@@ -56,7 +56,7 @@ class SupabaseService {
           .select("id, phone, nickname, name, stamps_balance, referral_credits, referral_code, referred_by, created_at")
           .order("created_at", { ascending: false })
           .limit(100);
-        if (!error && data && data.length > 0) {
+        if (!error && Array.isArray(data)) {
           localStorage.setItem("kazustore_cached_clients_list_v1", JSON.stringify(data));
           return data;
         }
