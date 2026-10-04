@@ -47,6 +47,70 @@ class SupabaseService {
     }
   }
 
+  async getAllClients() {
+    const client = this.getClient();
+    if (client && navigator.onLine) {
+      try {
+        const { data, error } = await client
+          .from("clients")
+          .select("id, phone, nickname, name, stamps_balance, referral_credits, referral_code, referred_by, created_at")
+          .order("created_at", { ascending: false })
+          .limit(100);
+        if (!error && data && data.length > 0) {
+          localStorage.setItem("kazustore_cached_clients_list_v1", JSON.stringify(data));
+          return data;
+        }
+      } catch (err) {
+        console.warn("Fallo al obtener clientes de Supabase, usando local:", err);
+      }
+    }
+
+    // Fallback local consolidado
+    const cached = localStorage.getItem("kazustore_cached_clients_list_v1");
+    if (cached) {
+      try { return JSON.parse(cached); } catch {}
+    }
+
+    // Generar consolidado desde registros locales y suscripciones
+    const localSubs = JSON.parse(localStorage.getItem("kazustore_local_subscriptions_v1") || "[]");
+    const localStamps = this.getPendingStamps();
+    const map = new Map();
+
+    localSubs.forEach(s => {
+      const p = (s.client_phone || "").replace(/[^\d+]/g, "");
+      if (p && !map.has(p)) {
+        map.set(p, {
+          phone: p,
+          nickname: s.client_name || "Cliente",
+          stamps_balance: 0,
+          referral_credits: 0,
+          referral_code: "KZ-" + p.slice(-4),
+          created_at: s.created_at || new Date().toISOString()
+        });
+      }
+    });
+
+    localStamps.forEach(st => {
+      const p = (st.phone || "").replace(/[^\d+]/g, "");
+      if (p) {
+        if (!map.has(p)) {
+          map.set(p, {
+            phone: p,
+            nickname: "Cliente KazuStore",
+            stamps_balance: 0,
+            referral_credits: 0,
+            referral_code: "KZ-" + p.slice(-4),
+            created_at: st.queued_at || new Date().toISOString()
+          });
+        }
+        const c = map.get(p);
+        c.stamps_balance = Math.max(0, (c.stamps_balance || 0) + (st.amount || 0));
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
   async getClientAudit(phone) {
     const cleanPhone = (phone || "").trim().replace(/[^\d+]/g, "").slice(0, 16);
     if (!cleanPhone || cleanPhone.length < 8) return null;
@@ -265,37 +329,85 @@ class SupabaseService {
         clientData = newClient;
       }
 
-      let delta = safeAction === "redeemed" ? -Math.abs(safeAmount) : Math.abs(safeAmount);
-      
-      if (safeAction === "use_referral_credits") {
+      let delta = 0;
+      let newBalance = clientData.stamps_balance || 0;
+
+      if (safeAction === "earned") {
+        delta = Math.abs(safeAmount);
+        newBalance = newBalance + delta;
+      } else if (safeAction === "claim_coupon_3") {
+        delta = 0; // No resta sellos, es un hito
+        newBalance = clientData.stamps_balance || 0;
+      } else if (safeAction === "reset_full_card_8") {
+        delta = -(clientData.stamps_balance || 0); // Resta todo para reiniciar a 0
+        newBalance = 0;
+      } else if (safeAction === "redeemed") {
+        delta = -Math.abs(safeAmount);
+        newBalance = Math.max(0, newBalance + delta);
+      } else if (safeAction === "use_referral_credits") {
         // Descontar y dejar en 0 los créditos de referidos
         await client.from("clients").update({ referral_credits: 0 }).eq("id", clientData.id);
         delta = 0; // No altera los sellos de la tarjeta
       }
 
+      // 1. Actualizar balance consolidado en el registro del cliente
+      if (safeAction !== "use_referral_credits" && safeAction !== "claim_coupon_3") {
+        await client
+          .from("clients")
+          .update({ stamps_balance: newBalance })
+          .eq("id", clientData.id);
+      }
+
+      // 2. Determinar motivo formateado
+      let formattedReason = safeReason;
+      if (safeAction === "claim_coupon_3") {
+        formattedReason = `🎟️ Cupón S/ 3.00 OFF Aplicado (Hito 5 Sellos conservado)`;
+      } else if (safeAction === "reset_full_card_8") {
+        formattedReason = `🏆 Premio Mayor S/ 8.00 Canjeado (Tarjeta completada y reiniciada a 0)`;
+      } else if (safeAction === "use_referral_credits") {
+        formattedReason = `💰 Canje de Créditos por Referidos (Descuento aplicado)`;
+      }
+
+      // 3. Registrar movimiento en stamps_ledger
       const { data: ledger, error: ledgerErr } = await client
         .from("stamps_ledger")
         .insert([{
           client_id: clientData.id,
           amount: delta,
           action: safeAction,
-          reason: safeAction === "use_referral_credits" ? `💰 Canje de Créditos por Referidos (Descuento aplicado)` : safeReason,
+          reason: formattedReason,
           festivity: safeFestivity,
-          balance_after: (clientData.stamps_balance || 0) + delta
+          balance_after: newBalance
         }])
         .select()
         .single();
 
       if (ledgerErr) throw ledgerErr;
-      return { success: true, ledger, offline: false, usedCredits: safeAction === "use_referral_credits" };
+
+      // Mantener sincronizado el registro local también
+      const localLedger = this.getPendingStamps();
+      localLedger.push({
+        phone: cleanPhone,
+        amount: delta,
+        action: safeAction,
+        reason: formattedReason,
+        festivity: safeFestivity,
+        id: "tx_" + Date.now(),
+        synced: true
+      });
+      localStorage.setItem(OFFLINE_STAMPS_KEY, JSON.stringify(localLedger));
+
+      return { success: true, ledger, offline: false, newBalance, usedCredits: safeAction === "use_referral_credits" };
     } catch (e) {
       // Si la llamada remota falló (ej. RLS, corte de red súbito), salvaguardamos localmente
       console.warn("Fallo remoto al registrar stamp, archivando offline:", e.message);
+      const deltaOffline = safeAction === "redeemed" ? -Math.abs(safeAmount) : Math.abs(safeAmount);
       const fallbackRecord = {
         phone: cleanPhone,
-        amount: safeAmount,
+        amount: deltaOffline,
         action: safeAction,
         reason: safeReason,
+        festivity: safeFestivity,
         offline: true,
         id: "offline_" + Date.now(),
         error: e.message

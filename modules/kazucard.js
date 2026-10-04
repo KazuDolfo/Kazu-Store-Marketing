@@ -24,11 +24,128 @@ export function initKazuCard(showToast) {
       if (statProfit) statProfit.textContent = `S/ ${parseFloat(metrics.total_net_profit || 0).toFixed(2)}`;
       if (statClients) statClients.textContent = metrics.total_registered_clients || 0;
     } else {
-      if (statGross) statGross.textContent = "S/ 1,840.00*";
-      if (statProfit) statProfit.textContent = "S/ 1,020.00*";
-      if (statClients) statClients.textContent = "142*";
+      if (statGross) statGross.textContent = "S/ 0.00";
+      if (statProfit) statProfit.textContent = "S/ 0.00";
+      if (statClients) statClients.textContent = "0";
     }
   }
+
+  const clientsListEl = document.getElementById("clients-list-container");
+  const searchClientsInput = document.getElementById("kc-search-clients");
+  const alertExpiringCount = document.getElementById("alert-expiring-count");
+  const openExpiringModalBtn = document.getElementById("btn-open-expiring-modal");
+  const closeExpiringModalBtn = document.getElementById("close-expiring-modal");
+  const expiringModalOverlay = document.getElementById("expiring-modal-overlay");
+
+  let allClientsData = [];
+
+  function openExpiringModal() {
+    if (!expiringModalOverlay) return;
+    expiringModalOverlay.style.display = "grid";
+    expiringModalOverlay.classList.remove("hidden");
+  }
+
+  function closeExpiringModal() {
+    if (!expiringModalOverlay) return;
+    expiringModalOverlay.style.display = "none";
+    expiringModalOverlay.classList.add("hidden");
+  }
+
+  openExpiringModalBtn?.addEventListener("click", openExpiringModal);
+  closeExpiringModalBtn?.addEventListener("click", closeExpiringModal);
+  expiringModalOverlay?.addEventListener("click", (e) => {
+    if (e.target === expiringModalOverlay) closeExpiringModal();
+  });
+
+  async function loadClients() {
+    if (!clientsListEl) return;
+    clientsListEl.innerHTML = '<span class="text-dim" style="font-size:0.8rem; padding:0.5rem;">Consultando clientes...</span>';
+    allClientsData = await dbService.getAllClients();
+    renderClients(allClientsData);
+    if (statClients) statClients.textContent = allClientsData.length;
+  }
+
+  function renderClients(clients) {
+    if (!clientsListEl) return;
+    clientsListEl.replaceChildren();
+
+    if (!clients || clients.length === 0) {
+      const emptySpan = document.createElement("span");
+      emptySpan.className = "text-dim";
+      emptySpan.style.cssText = "font-size:0.8rem; padding:0.5rem;";
+      emptySpan.textContent = "No se encontraron clientes registrados.";
+      clientsListEl.appendChild(emptySpan);
+      return;
+    }
+
+    clients.forEach(c => {
+      const row = document.createElement("div");
+      row.className = "client-item-row";
+      row.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:0.5rem 0.75rem; cursor:pointer; transition:all 0.15s ease;";
+
+      const infoBox = document.createElement("div");
+      infoBox.style.cssText = "display:flex; flex-direction:column; gap:2px;";
+
+      const nameStrong = document.createElement("strong");
+      nameStrong.style.cssText = "font-size:0.82rem; color:var(--text-main);";
+      nameStrong.textContent = c.nickname || c.name || "Cliente KazuStore";
+
+      const phoneSpan = document.createElement("small");
+      phoneSpan.style.cssText = "font-size:0.75rem; color:var(--color-cyan);";
+      phoneSpan.textContent = `📱 ${c.phone || "Sin tel"} · Ref: ${c.referral_code || 'KZ-VIP'}`;
+
+      infoBox.appendChild(nameStrong);
+      infoBox.appendChild(phoneSpan);
+
+      const badgesBox = document.createElement("div");
+      badgesBox.style.cssText = "display:flex; gap:6px; align-items:center;";
+
+      const stampsBadge = document.createElement("span");
+      const balance = c.stamps_balance || 0;
+      stampsBadge.style.cssText = `background:${balance >= 5 ? 'rgba(5,150,105,0.2)' : 'rgba(2,132,199,0.15)'}; color:${balance >= 5 ? '#10b981' : '#38bdf8'}; border:1px solid ${balance >= 5 ? '#059669' : '#0284c7'}; font-size:0.74rem; font-weight:700; padding:2px 7px; border-radius:10px;`;
+      stampsBadge.textContent = `${balance} Puntos`;
+
+      const viewBtn = document.createElement("a");
+      viewBtn.href = `https://kazudolfo.github.io/kazu-store/?tel=${encodeURIComponent(c.phone)}#kazupuntos`;
+      viewBtn.target = "_blank";
+      viewBtn.rel = "noopener noreferrer";
+      viewBtn.title = "Abrir tarjeta digital del cliente";
+      viewBtn.style.cssText = "font-size:0.85rem; text-decoration:none; padding:2px 4px;";
+      viewBtn.textContent = "🔗";
+
+      badgesBox.appendChild(stampsBadge);
+      badgesBox.appendChild(viewBtn);
+
+      row.appendChild(infoBox);
+      row.appendChild(badgesBox);
+
+      // Clic para cargar en el formulario
+      row.addEventListener("click", (e) => {
+        if (e.target.tagName.toLowerCase() === "a") return;
+        if (phoneInput) phoneInput.value = c.phone;
+        if (auditBtn) auditBtn.click();
+        row.style.borderColor = "var(--color-cyan)";
+        setTimeout(() => row.style.borderColor = "var(--border-subtle)", 400);
+      });
+
+      clientsListEl.appendChild(row);
+    });
+  }
+
+  searchClientsInput?.addEventListener("input", () => {
+    const q = (searchClientsInput.value || "").toLowerCase().trim();
+    if (!q) {
+      renderClients(allClientsData);
+      return;
+    }
+    const filtered = allClientsData.filter(c => {
+      return (c.phone && c.phone.includes(q)) ||
+             (c.nickname && c.nickname.toLowerCase().includes(q)) ||
+             (c.name && c.name.toLowerCase().includes(q)) ||
+             (c.referral_code && c.referral_code.toLowerCase().includes(q));
+    });
+    renderClients(filtered);
+  });
 
   async function loadExpiring() {
     if (!expiringListEl) return;
@@ -41,10 +158,13 @@ export function initKazuCard(showToast) {
     const list = await dbService.getExpiringSubscriptions();
     expiringListEl.replaceChildren();
 
+    const count = list ? list.length : 0;
+    if (alertExpiringCount) alertExpiringCount.textContent = count;
+
     if (!list || list.length === 0) {
       const emptyDiv = document.createElement("div");
       emptyDiv.className = "empty-cloud";
-      emptyDiv.textContent = "No hay suscripciones en alerta crítica (< 3 días).";
+      emptyDiv.textContent = "✅ ¡Excelente! No hay suscripciones en alerta crítica (< 3 días).";
       expiringListEl.appendChild(emptyDiv);
       return;
     }
@@ -73,7 +193,8 @@ export function initKazuCard(showToast) {
       details.className = "expiring-details";
 
       const phoneSpan = document.createElement("span");
-      phoneSpan.textContent = `📱 ${String(sub.client_phone || "Cliente")}`;
+      const phoneText = String(sub.client_phone || "Cliente");
+      phoneSpan.textContent = `📱 ${phoneText}`;
 
       const dateSpan = document.createElement("span");
       dateSpan.textContent = `Vence: ${String(sub.end_date || "Próximamente")}`;
@@ -81,8 +202,25 @@ export function initKazuCard(showToast) {
       details.appendChild(phoneSpan);
       details.appendChild(dateSpan);
 
+      // Botón WhatsApp para avisar al cliente
+      const waActionRow = document.createElement("div");
+      waActionRow.style.cssText = "margin-top:8px; display:flex; justify-content:flex-end;";
+      
+      const cleanSubPhone = phoneText.replace(/[^\d+]/g, "");
+      const waBtn = document.createElement("a");
+      waBtn.className = "btn-action btn-wa";
+      waBtn.style.cssText = "font-size:0.75rem; padding:4px 8px; text-decoration:none;";
+      const renewMsg = `¡Hola! Tu servicio de *${sub.product_name || 'KazuStore'}* vence en ${sub.days_remaining || 'pocos'} días (${sub.end_date}). ¿Deseas renovarlo hoy para no perder tu acceso ni perfiles? Quedo atento. 😊`;
+      waBtn.href = `https://wa.me/${cleanSubPhone}?text=${encodeURIComponent(renewMsg)}`;
+      waBtn.target = "_blank";
+      waBtn.rel = "noopener noreferrer";
+      waBtn.textContent = "💬 Notificar Renovación";
+
+      waActionRow.appendChild(waBtn);
+
       card.appendChild(header);
       card.appendChild(details);
+      card.appendChild(waActionRow);
       grid.appendChild(card);
     });
 
@@ -153,13 +291,16 @@ export function initKazuCard(showToast) {
     });
   }
 
-  registerBtn.addEventListener("click", async () => {
-    // Sanitización y validación estricta CWE-20
+  const btnAdd = document.getElementById("kc-btn-add");
+  const btnRedeem = document.getElementById("kc-btn-redeem");
+  const btnCredits = document.getElementById("kc-btn-credits");
+
+  async function executeStampOperation(explicitAction) {
     const rawPhone = phoneInput.value.trim();
     const phone = rawPhone.replace(/[^\d+]/g, ""); // Solo dígitos y símbolo +
     const rawAmount = parseInt(amountInput.value, 10);
     const amount = isNaN(rawAmount) ? 1 : Math.max(1, Math.min(20, rawAmount));
-    const action = actionSelect.value === "redeemed" ? "redeemed" : "earned";
+    const action = explicitAction || (actionSelect ? actionSelect.value : "earned");
     const reason = reasonInput.value.trim().slice(0, 100);
     const festivitySelect = document.getElementById("kc-festivity-select");
     const festivity = festivitySelect ? festivitySelect.value : "auto";
@@ -170,45 +311,105 @@ export function initKazuCard(showToast) {
       return;
     }
 
+    // Si la acción es canjear sellos, sincronizar el select
+    if (actionSelect) actionSelect.value = action;
+
     statusEl.textContent = "⏳ Conectando con Supabase Cloud...";
     statusEl.className = "status-feedback text-cyan";
 
     const res = await dbService.registerStamp(phone, amount, action, reason, festivity);
     if (res.success) {
-      if (res.offline) {
-        statusEl.textContent = `💾 Registrado en modo OFFLINE (guardado localmente para sincronizar).`;
-        statusEl.className = "status-feedback text-amber";
-        showToast("¡Puntos guardados offline!");
-      } else {
-        statusEl.textContent = "✅ ¡KazuPuntos registrados exitosamente en la nube!";
-        statusEl.className = "status-feedback text-emerald";
-        showToast("¡KazuPuntos registrados!");
-      }
-
       const clientUrl = `https://kazudolfo.github.io/kazu-store/?tel=${encodeURIComponent(phone)}`;
-      let opText = `${action === "earned" ? `+${amount} KazuPunto(s) acumulado(s)` : `-${amount} KazuPunto(s) canjeado(s)`}`;
-      if (action === "use_referral_credits") {
-        opText = `💰 Canje de Saldo por Referidos aplicado en tu pedido (Saldo actualizado a S/ 0.00)`;
+      let opText = "";
+      
+      if (action === "earned") {
+        opText = `➕ *+${amount} KazuPunto(s)* acumulado(s) por tu compra`;
+        statusEl.textContent = `✅ ¡+${amount} KazuPuntos SUMADOS correctamente al cliente!`;
+        statusEl.className = "status-feedback text-emerald";
+        showToast(`¡+${amount} Puntos sumados!`);
+      } else if (action === "claim_coupon_3") {
+        opText = `🎟️ *Cupón de Descuento S/ 3.00 OFF* aplicado en tu servicio (¡Conservas tus 5 sellos para la meta de S/ 8!)`;
+        statusEl.textContent = `✅ ¡Cupón de S/ 3.00 OFF aplicado! (Tus sellos no se descuentan)`;
+        statusEl.className = "status-feedback text-cyan";
+        showToast("¡Cupón S/ 3.00 OFF aplicado!");
+      } else if (action === "reset_full_card_8") {
+        opText = `🏆 *Premio Mayor de S/ 8.00 de Crédito* aplicado por tarjeta completa de 10 sellos. ¡Tarjeta reiniciada para acumular nuevamente!`;
+        statusEl.textContent = `✅ ¡Premio de S/ 8.00 aplicado! Tarjeta completada y reiniciada a 0.`;
+        statusEl.className = "status-feedback text-emerald";
+        showToast("¡S/ 8.00 de Crédito aplicado y tarjeta reiniciada!");
+      } else if (action === "redeemed") {
+        opText = `🎁 *-${amount} KazuPunto(s)* canjeado(s) de tu tarjeta`;
+        statusEl.textContent = `✅ ¡-${amount} KazuPuntos descontados de la tarjeta!`;
+        statusEl.className = "status-feedback text-emerald";
+        showToast(`¡-${amount} Puntos descontados!`);
+      } else if (action === "use_referral_credits") {
+        opText = `💰 *Canje de Saldo por Referidos* aplicado en tu pedido (Saldo de referidos descontado)`;
+        statusEl.textContent = "✅ ¡Crédito por referidos canjeado y descontado!";
+        statusEl.className = "status-feedback text-emerald";
+        showToast("¡Créditos de referidos canjeados!");
       }
 
-      const message = `🎉 *¡KAZUSTORE - TUS KAZUPUNTOS ESTÁN ACTIVOS!* 🎁
+      if (res.offline) {
+        statusEl.textContent += " (Modo Offline guardado)";
+      }
 
-¡Hola! Hemos actualizado tu cuenta y tarjeta de fidelidad en *KazuPuntos*:
+      const message = `🎉 *¡KAZUSTORE - TUS KAZUPUNTOS ESTÁN ACTUALIZADOS!* 🎁
+
+¡Hola! Hemos registrado tus beneficios en tu cuenta de fidelidad *KazuPuntos*:
 
 ✨ *Operación:* ${opText}
-📌 *Motivo:* ${reason || "Compra en KazuStore"}
+📌 *Detalle:* ${reason || "Atención KazuStore"}
 
-📲 *Consulta tu Tarjeta Digital, Saldo y Código de Referido aquí:*
+📲 *Consulta tu Tarjeta Digital en vivo, Sellos y Código de Referido aquí:*
 ${clientUrl}
 
-¡Gracias por tu preferencia! Recuerda que por cada amigo que compre con tu código, ganas S/ 1.00 de crédito acumulable para tus siguientes renovaciones. ⭐`;
+¡Gracias por tu preferencia! Recuerda que cada compra te acerca a descuentos y crédito exclusivo. ⭐`;
 
       messageResult.value = message;
+      
+      // Si la caja de auditoría estaba visible, refrescarla
+      if (auditBtn && !auditBox?.classList.contains("hidden")) {
+        auditBtn.click();
+      }
+      loadClients();
     } else {
       statusEl.textContent = `❌ Error: ${res.error}`;
       statusEl.className = "status-feedback text-rose";
     }
-  });
+  }
+
+  const btnCoupon3 = document.getElementById("kc-btn-coupon-3");
+  const btnRedeem10 = document.getElementById("kc-btn-redeem-10");
+
+  if (btnAdd) {
+    btnAdd.addEventListener("click", () => executeStampOperation("earned"));
+  }
+
+  if (btnCoupon3) {
+    btnCoupon3.addEventListener("click", () => executeStampOperation("claim_coupon_3"));
+  }
+
+  if (btnRedeem10) {
+    btnRedeem10.addEventListener("click", () => executeStampOperation("reset_full_card_8"));
+  }
+
+  if (btnCredits) {
+    btnCredits.addEventListener("click", () => executeStampOperation("use_referral_credits"));
+  }
+
+  if (actionSelect) {
+    actionSelect.addEventListener("change", () => {
+      if (actionSelect.value === "earned" && reasonInput.value.includes("Cupón")) {
+        reasonInput.value = "Compra KazuStore";
+      } else if (actionSelect.value === "claim_coupon_3") {
+        reasonInput.value = "Cupón S/ 3.00 OFF Renovación";
+      } else if (actionSelect.value === "reset_full_card_8") {
+        reasonInput.value = "Canje Tarjeta Completa S/ 8.00 Crédito";
+      } else if (actionSelect.value === "use_referral_credits") {
+        reasonInput.value = "Canje Saldo Amigos Referidos";
+      }
+    });
+  }
 
   if (copyBtn) {
     copyBtn.addEventListener("click", () => {
@@ -229,10 +430,12 @@ ${clientUrl}
     refreshCloudBtn.addEventListener("click", () => {
       loadMetrics();
       loadExpiring();
-      showToast("Métricas actualizadas.");
+      loadClients();
+      showToast("Métricas y clientes actualizados.");
     });
   }
 
   loadMetrics();
   loadExpiring();
+  loadClients();
 }

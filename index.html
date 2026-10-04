@@ -477,11 +477,12 @@
 
             <div class="form-row">
               <div class="form-group flex-1">
-                <label for="kc-action-select">Tipo de Operación:</label>
+                <label for="kc-action-select">Operación Seleccionada:</label>
                 <select id="kc-action-select">
-                  <option value="earned">Sumar KazuPuntos (+ Ganados por Compra)</option>
-                  <option value="redeemed">Canjear KazuPuntos (- Reclamar Premio S/ 3 o S/ 8)</option>
-                  <option value="use_referral_credits">💰 Canjear Créditos por Referidos (Descontar y Dejar en S/ 0)</option>
+                  <option value="earned">➕ Sumar Puntos (+ Ganados por Compra)</option>
+                  <option value="claim_coupon_3">🎟️ Aplicar Cupón S/ 3 OFF (Hito 5 Sellos - No Resta)</option>
+                  <option value="reset_full_card_8">🏆 Canjear Tarjeta Llena S/ 8 (Reiniciar a 0 Sellos)</option>
+                  <option value="use_referral_credits">💰 Canjear Saldo Referidos (Aplicar y Restablecer)</option>
                 </select>
               </div>
               <div class="form-group flex-1">
@@ -489,7 +490,7 @@
                 <input type="text" id="kc-reason-input" value="Compra Netflix UHD 4K">
               </div>
               <div class="form-group flex-1">
-                <label for="kc-festivity-select">Estilo de Sello (Festividad):</label>
+                <label for="kc-festivity-select">Estilo Visual del Sello:</label>
                 <select id="kc-festivity-select">
                   <option value="auto">⚡ Automático (Según temporada activa)</option>
                   <option value="halloween">🎃 Halloween (Calabaza Spooky)</option>
@@ -499,8 +500,22 @@
               </div>
             </div>
 
-            <button type="button" class="btn-action btn-save w-100" id="kc-register-btn">⚡ Registrar KazuPuntos en Supabase</button>
-            <div id="kc-status-feedback" class="status-feedback"></div>
+            <!-- Botones de Acción de Fidelidad Exactos y Comerciales -->
+            <div class="action-buttons-group mt-1" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:0.5rem;">
+              <button type="button" class="btn-action btn-save" id="kc-btn-add" style="background:#059669; color:#fff; padding:0.75rem 0.85rem; font-weight:700;">
+                ➕ Sumar Puntos (+)
+              </button>
+              <button type="button" class="btn-action" id="kc-btn-coupon-3" style="background:#0284c7; color:#fff; padding:0.75rem 0.85rem; font-weight:700;" title="Aplica el descuento de S/ 3.00 sin descontar sellos de la tarjeta">
+                🎟️ Cupón S/ 3 OFF (Sello 5)
+              </button>
+              <button type="button" class="btn-action" id="kc-btn-redeem-10" style="background:#e11d48; color:#fff; padding:0.75rem 0.85rem; font-weight:700;" title="Canjea S/ 8.00 de crédito y reinicia la tarjeta a 0 sellos para un nuevo ciclo">
+                🏆 Canje S/ 8 (Reiniciar a 0)
+              </button>
+              <button type="button" class="btn-action btn-copy" id="kc-btn-credits" style="background:#8b5cf6; color:#fff; padding:0.75rem 0.85rem; font-weight:700;" title="Aplica el saldo acumulado por amigos recomendados">
+                💰 Canjear Saldo Referidos
+              </button>
+            </div>
+            <div id="kc-status-feedback" class="status-feedback mt-1"></div>
           </form>
 
           <div class="message-preview-container mt-1">
@@ -512,11 +527,13 @@
           </div>
         </div>
 
-        <!-- Métricas Cloud & Alertas de Renovación -->
+        <!-- Directorio de Clientes Registrados & Métricas Cloud -->
         <div class="panel-card sticky-card">
           <div class="card-header">
-            <h2>☁️ Métricas Cloud & Suscripciones</h2>
-            <button class="btn-sm btn-ghost" id="refresh-cloud-btn">🔄 Actualizar</button>
+            <h2>👥 Clientes Registrados & Club</h2>
+            <div style="display:flex; gap:0.4rem; align-items:center;">
+              <button type="button" class="btn-sm btn-ghost" id="refresh-cloud-btn">🔄 Actualizar</button>
+            </div>
           </div>
 
           <div class="financial-metrics-grid">
@@ -530,18 +547,54 @@
             </div>
             <div class="metric-box">
               <span class="metric-label">Clientes Totales</span>
-              <span class="metric-value" id="cloud-metric-clients">0</span>
+              <span class="metric-value text-emerald" id="cloud-metric-clients">0</span>
             </div>
           </div>
 
-          <h3 class="cloud-subtitle">⏳ Suscripciones Próximas a Vencer (&lt; 3 Días)</h3>
-          <div id="cloud-expiring-list" class="cloud-expiring-container">
-            <!-- Renderizado dinámico -->
+          <!-- Alerta Emergente de Clientes Próximos a Vencer -->
+          <div class="renewal-alert-card" id="renewal-alert-card" style="margin-top:1rem; background:rgba(234, 88, 12, 0.12); border:1px solid rgba(234, 88, 12, 0.4); border-radius:8px; padding:0.75rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#fb923c; font-size:0.85rem; display:flex; align-items:center; gap:6px;">
+                🔔 Renovaciones Próximas (<span id="alert-expiring-count">0</span>)
+              </strong>
+              <button type="button" class="btn-action btn-sm" id="btn-open-expiring-modal" style="background:#ea580c; color:#fff; padding:3px 10px; font-size:0.75rem; border-radius:12px;">
+                Ver Alertas
+              </button>
+            </div>
+            <small style="color:var(--text-muted); display:block; margin-top:4px; font-size:0.75rem;">Clientes con suscripciones que caducan en 3 días o menos.</small>
+          </div>
+
+          <!-- Buscador y Lista de Clientes -->
+          <div class="clients-directory-section" style="margin-top:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+              <h3 class="cloud-subtitle" style="margin:0;">📋 Lista de Clientes Registrados</h3>
+            </div>
+            <input type="text" id="kc-search-clients" placeholder="🔍 Buscar por teléfono, nombre o código..." style="width:100%; margin-bottom:0.6rem; padding:0.5rem 0.75rem; font-size:0.82rem; background:var(--bg-input); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); color:var(--text-main);">
+            <div id="clients-list-container" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:0.4rem; padding-right:4px;">
+              <!-- Lista renderizada dinámicamente -->
+            </div>
           </div>
         </div>
 
       </div>
     </section>
+
+    <!-- Modal Emergente de Suscripciones Próximas a Vencer -->
+    <div id="expiring-modal-overlay" class="modal-overlay hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); z-index:9999; display:none; place-items:center; padding:1rem;">
+      <div class="modal-card" style="background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); width:100%; max-width:540px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 40px rgba(0,0,0,0.5);">
+        <div class="card-header" style="padding:1rem 1.25rem; border-bottom:1px solid var(--border-subtle); margin:0;">
+          <h2 style="font-size:1rem; color:#f97316; display:flex; align-items:center; gap:8px;">
+            ⏳ Suscripciones Próximas a Vencer (&lt; 3 Días)
+          </h2>
+          <button type="button" class="btn-sm btn-ghost" id="close-expiring-modal" style="font-size:1.2rem; line-height:1; cursor:pointer;" aria-label="Cerrar modal">✕</button>
+        </div>
+        <div style="padding:1.25rem; overflow-y:auto; flex:1;">
+          <div id="cloud-expiring-list" class="cloud-expiring-container">
+            <!-- Items renderizados dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- ==========================================
          TAB 6: CONFIGURACIÓN PRIVADA DE CUENTAS
