@@ -223,6 +223,9 @@ Cualquier consulta técnica cuentas con nuestro soporte directo. ¡Que disfrutes
       deliveryStatus.textContent = "⏳ Guardando cliente y agendando vencimiento...";
       deliveryStatus.className = "status-feedback text-cyan";
 
+      const giveStampCheck = document.getElementById("delivery-give-stamp");
+      const giveStamp = giveStampCheck ? giveStampCheck.checked : true;
+
       const res = await dbService.registerSubscription({
         name,
         phone,
@@ -230,7 +233,8 @@ Cualquier consulta técnica cuentas con nuestro soporte directo. ¡Que disfrutes
         days,
         expiryDate,
         user,
-        pin
+        pin,
+        giveStamp
       });
 
       if (res && res.success) {

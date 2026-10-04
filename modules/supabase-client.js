@@ -309,10 +309,37 @@ class SupabaseService {
         if (!clientRecord && cleanPhone) {
           const { data: created } = await client
             .from("clients")
-            .insert([{ phone: cleanPhone, nickname: name || "Cliente" }])
-            .select("id")
+            .insert([{ 
+              phone: cleanPhone, 
+              nickname: name || "Cliente",
+              stamps_balance: clientData.giveStamp ? 1 : 0
+            }])
+            .select("id, stamps_balance")
             .single();
           clientRecord = created;
+
+          if (clientData.giveStamp && created) {
+            await client.from("stamps_ledger").insert([{
+              client_id: created.id,
+              amount: 1,
+              action: "earned",
+              reason: `🎁 1er Sello de Bienvenida / Compra (${serviceName})`,
+              festivity: "auto",
+              balance_after: 1
+            }]);
+          }
+        } else if (clientRecord && clientData.giveStamp) {
+          // Si ya existía y se marcó otorgar sello por compra, sumar 1
+          const newBal = (clientRecord.stamps_balance || 0) + 1;
+          await client.from("clients").update({ stamps_balance: newBal }).eq("id", clientRecord.id);
+          await client.from("stamps_ledger").insert([{
+            client_id: clientRecord.id,
+            amount: 1,
+            action: "earned",
+            reason: `➕ Sello por compra (${serviceName})`,
+            festivity: "auto",
+            balance_after: newBal
+          }]);
         }
 
         if (clientRecord) {
